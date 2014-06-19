@@ -4,6 +4,38 @@
               android:layout_width="fill_parent"
               android:layout_height="fill_parent"
         >
+
+    <LinearLayout
+            android:id="@+id/threeFirstNumbers"
+            android:layout_below="@+id/textResult"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="3" >
+
+        <Button
+                android:text="clear"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="onBtnClickedNumber1"
+                />
+        <Button
+                android:text="getCouriers"
+                android:layout_width="0dp"
+                android:onClick="onBtnClickedNumber2"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+
+                />
+        <Button
+                android:text="getTracking"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:onClick="onBtnClickedNumber3"
+                android:layout_weight="1"
+                />
+    </LinearLayout>
     <TextView
             android:id="@+id/tv_main"
             android:layout_width="fill_parent"
