@@ -23,11 +23,8 @@ public class MyActivity extends Activity implements AsyncTaskCompleteListener<Co
         setContentView(R.layout.main);
         tv_main = (TextView)findViewById(R.id.tv_main);
 
-        try {
-            new ConnectionAPI(API_KEY, ConnectionAPIMethods.getCouriers, this).execute();
-        }catch (Exception e){
-            System.out.println(e.getMessage());
-        }
+        new ConnectionAPI(API_KEY, ConnectionAPIMethods.getCouriers, this).execute();
+
     }
 
     public void onTaskComplete(ConnectionAPI result) {
@@ -42,7 +39,7 @@ public class MyActivity extends Activity implements AsyncTaskCompleteListener<Co
             case 2://getTrackingByNumber
                 break;
             case 3://getTracking
-                List<Tracking> trackings = result.getTrackingsReturn();
+                List<Tracking> trackings =(List<Tracking>) result.getReturn();
                 for (int i = 0; i < trackings.size(); i++)
                     tv_main.setText(tv_main.getText() + trackings.get(i).getTrackingNumber() + "\t" + trackings.get(i).getSlug() + "\n");
                 break;
@@ -53,7 +50,7 @@ public class MyActivity extends Activity implements AsyncTaskCompleteListener<Co
             case 6://putTracking
                 break;
             case 7://getCouriers(7)
-                List<Courier> couriers = result.getCouriersReturn();
+                List<Courier> couriers = (List<Courier>) result.getReturn();
                 for (int i = 0; i < couriers.size(); i++)
                     tv_main.setText(tv_main.getText() + couriers.get(i).getName() + "\t" + couriers.get(i).getSlug() + "\n");
                 break;
@@ -66,18 +63,11 @@ public class MyActivity extends Activity implements AsyncTaskCompleteListener<Co
 
     }
     public void  onBtnClickedNumber2(View view){
-        try {
             new ConnectionAPI(API_KEY, ConnectionAPIMethods.getCouriers, this).execute();
-        }catch (Exception e){
-            System.out.println(e.getMessage());
-        }
     }
     public void  onBtnClickedNumber3(View view){
-        try {
-            new ConnectionAPI(API_KEY, ConnectionAPIMethods.getTracking, this,1).execute();
-        }catch (Exception e){
-            System.out.println(e.getMessage());
-        }
+            new ConnectionAPI(API_KEY, ConnectionAPIMethods.getTrackings, this,1).execute();
+
     }
 
 

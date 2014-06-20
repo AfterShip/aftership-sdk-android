@@ -61,33 +61,32 @@ public class ConnectionAPI extends AsyncTask<ConnectionAPIMethods,Void,Connectio
         this.callback = callback;
         this.keyAPI = keyAPI;
         /**show the dialog from the context from where is called, if error, delete this line*/
-        this.dialog = new ProgressDialog((Context)callback);
+        this.dialog = callback instanceof Context? new ProgressDialog((Context)callback):null;
     }
 
-    public ConnectionAPI(String keyAPI,ConnectionAPIMethods method,AsyncTaskCompleteListener<ConnectionAPI> callback)
-            throws AftershipAPIException{
+    public ConnectionAPI(String keyAPI,ConnectionAPIMethods method,AsyncTaskCompleteListener<ConnectionAPI> callback){
         this(method,callback,keyAPI);
         if(method!=ConnectionAPIMethods.getCouriers)
-            throw new AftershipAPIException("The consntructor only can be called with ConnectionAPIMethods.getCouriers");
+           this.exception = new AftershipAPIException("The consntructor only can be called with ConnectionAPIMethods.getCouriers");
 
     }
 
     public ConnectionAPI(String keyAPI,ConnectionAPIMethods method,AsyncTaskCompleteListener<ConnectionAPI> callback,
-                         String trackingNumber)throws AftershipAPIException{
+                         String trackingNumber){
         this(method,callback,keyAPI);
         if(method!=ConnectionAPIMethods.detectCouriers)
-            throw new AftershipAPIException("The consntructor only can be called with " +
+            this.exception =  new AftershipAPIException("The consntructor only can be called with " +
                     "ConnectionAPIMethods.detectCouriers");
         this.trackingNumber = trackingNumber;
 
     }
 
     public ConnectionAPI(String keyAPI,ConnectionAPIMethods method,AsyncTaskCompleteListener<ConnectionAPI> callback,
-                         String trackingNumber,String slug) throws AftershipAPIException{
+                         String trackingNumber,String slug){
         this(method,callback,keyAPI);
         if(method!=ConnectionAPIMethods.getTrackingByNumber && method!=ConnectionAPIMethods.deleteTracking &&
                 method!=ConnectionAPIMethods.reactivate && method!=ConnectionAPIMethods.getLastCheckpoint)
-            throw new AftershipAPIException("The consntructor only can be called with" +
+            this.exception =  new AftershipAPIException("The consntructor only can be called with" +
                     "ConnectionAPIMethods.getTrackingByNumber,ConnectionAPIMethods.deleteTracking," +
                     "ConnectionAPIMethods.reactivate, ConnectionAPIMethods.getLastCheckpoint");
         this.trackingNumber = trackingNumber;
@@ -96,37 +95,37 @@ public class ConnectionAPI extends AsyncTask<ConnectionAPIMethods,Void,Connectio
     }
 
     public ConnectionAPI(String keyAPI,ConnectionAPIMethods method, AsyncTaskCompleteListener<ConnectionAPI> callback,
-                         ParametersTracking parameters)throws AftershipAPIException{
+                         ParametersTracking parameters){
         this(method,callback,keyAPI);
-        if(method!=ConnectionAPIMethods.getTracking)
-            throw new AftershipAPIException("The consntructor only can be called with ConnectionAPIMethods.getTracking");
+        if(method!=ConnectionAPIMethods.getTrackings && method!=ConnectionAPIMethods.getTrackingsNext)
+           this.exception =  new AftershipAPIException("The consntructor only can be called with ConnectionAPIMethods.getTracking" +
+                   "or ConnectionAPIMethods.getTrackingsNext");
         this.parameters = parameters;
 
     }
 
     public ConnectionAPI(String keyAPI,ConnectionAPIMethods method,AsyncTaskCompleteListener<ConnectionAPI> callback,
-                         int page) throws AftershipAPIException{
+                         int page){
         this(method,callback,keyAPI);
-        if(method!=ConnectionAPIMethods.getTracking)
-            throw new AftershipAPIException("The consntructor only can be called with ConnectionAPIMethods.getTracking");
+        if(method!=ConnectionAPIMethods.getTrackings)
+            this.exception =  new AftershipAPIException("The consntructor only can be called with ConnectionAPIMethods.getTracking");
         this.page = page;
     }
 
     public ConnectionAPI(String keyAPI,ConnectionAPIMethods method,AsyncTaskCompleteListener<ConnectionAPI> callback,
-                         Tracking tracking)throws AftershipAPIException{
+                         Tracking tracking){
         this(method,callback,keyAPI);
         if(method!=ConnectionAPIMethods.postTracking && method!=ConnectionAPIMethods.putTracking)
-            throw new AftershipAPIException("The consntructor only can be called with," +
+            this.exception =  new AftershipAPIException("The consntructor only can be called with," +
                     " ConnectionAPIMethods.postTracking or ConnectionAPIMethods.putTracking");
         this.tracking = tracking;
     }
 
     public ConnectionAPI(String keyAPI,ConnectionAPIMethods method,AsyncTaskCompleteListener<ConnectionAPI> callback,
-                         String trackingNumber,String slug, List<Field> fields, String lang)
-            throws AftershipAPIException{
+                         String trackingNumber,String slug, List<Field> fields, String lang){
         this(method,callback,keyAPI);
         if(method!=ConnectionAPIMethods.postTracking && method!=ConnectionAPIMethods.putTracking)
-            throw new AftershipAPIException("The consntructor only can be called with" +
+            this.exception =  new AftershipAPIException("The consntructor only can be called with" +
                     " ConnectionAPIMethods.postTracking or method!=ConnectionAPIMethods.putTracking");
         this.trackingNumber = trackingNumber;
         this.slug = slug;
@@ -143,51 +142,57 @@ public class ConnectionAPI extends AsyncTask<ConnectionAPIMethods,Void,Connectio
     protected ConnectionAPI doInBackground(ConnectionAPIMethods... connectionAPI){
 //        getLastCheckpoint(0),reactivate(1),getTrackingByNumber(2),getTracking(3),deleteTracking(4),
 //                postTracking(5),putTracking(6),getCouriers(7),detectCouriers(8);
-        try {
-            switch (this.method.getNumberMethod()) {
-                case 0://getLastCheckpoint
-                    if(this.fields == null && this.lang==null)
-                        this.checkpointReturn = this.getLastCheckpoint(this.trackingNumber, this.slug);
-                    else
-                        this.checkpointReturn = this.getLastCheckpoint(this.trackingNumber,
-                                this.slug, this.fields, this.slug);
-                    break;
-                case 1: //reactivate
-                        this.confirmationReturn = this.reactivate(this.trackingNumber,this.slug);
-                    break;
-                case 2://getTrackingByNumber
-                    if(this.fields == null && this.lang==null)
-                       this.trackingReturn = this.getTrackingByNumber(this.trackingNumber,this.slug);
-                    else
-                        this.trackingReturn = this.getTrackingByNumber(
-                                this.trackingNumber,this.slug,this.fields,this.lang);
-                    break;
-                case 3://getTracking
-                    if(this.parameters ==null)
-                        this.trackingsReturn = this.getTracking(this.page);
-//                    else
-//                        this.trackingsReturn = this.getTracking(parameters);
-                    break;
-                case 4://deleteTracking
-                    this.confirmationReturn = this.deleteTracking(this.trackingNumber,this.slug);
-                    break;
-                case 5://postTracking
-                    this.trackingReturn = this.postTracking(this.tracking);
-                    break;
-                case 6://putTracking
-                    this.trackingReturn = this.putTracking(this.tracking);
-                    break;
-                case 7://getCouriers(7)
-                    this.couriersReturn = this.getCouriers();
-                    break;
-                case 8://detectCouriers(8)
-                    this.couriersReturn = this.detectCouriers(this.trackingNumber);
-                    break;
-            }
-        }catch( Exception e){
-            this.exception = e;
-        }
+        if(this.exception ==null) {
+            try {
+                switch (this.method.getNumberMethod()) {
+                    case 0://getLastCheckpoint
+                        if (this.fields == null && this.lang == null)
+                            this.checkpointReturn = this.getLastCheckpoint(this.trackingNumber, this.slug);
+                        else
+                            this.checkpointReturn = this.getLastCheckpoint(this.trackingNumber,
+                                    this.slug, this.fields, this.slug);
+                        break;
+                    case 1: //reactivate
+                        this.confirmationReturn = this.reactivate(this.trackingNumber, this.slug);
+                        break;
+                    case 2://getTrackingByNumber
+                        if (this.fields == null && this.lang == null)
+                            this.trackingReturn = this.getTrackingByNumber(this.trackingNumber, this.slug);
+                        else
+                            this.trackingReturn = this.getTrackingByNumber(
+                                    this.trackingNumber, this.slug, this.fields, this.lang);
+                        break;
+                    case 3://getTracking
+                        if (this.parameters == null)
+                            this.trackingsReturn = this.getTrackings(this.page);
+                        else
+                            this.trackingsReturn = this.getTrackings(this.parameters);
+                        break;
+                    case 4://deleteTracking
+                        this.confirmationReturn = this.deleteTracking(this.trackingNumber, this.slug);
+                        break;
+                    case 5://postTracking
+                        this.trackingReturn = this.postTracking(this.tracking);
+                        break;
+                    case 6://putTracking
+                        this.trackingReturn = this.putTracking(this.tracking);
+                        break;
+                    case 7://getCouriers(7)
+                        this.couriersReturn = this.getCouriers();
+                        break;
+                    case 8://detectCouriers(8)
+                        this.couriersReturn = this.detectCouriers(this.trackingNumber);
+                        break;
+                    case 9://getTrackingsNext(9)
+                        this.trackingsReturn = this.getTrackingsNext(this.parameters);
+                        break;
 
+                }
+            } catch (Exception e) {
+                this.exception = e;
+            }
+
+        }
         return this;
     }
 
@@ -346,7 +351,7 @@ public class ConnectionAPI extends AsyncTask<ConnectionAPIMethods,Void,Connectio
      * Get trackings from your account with the ParametersTracking defined in the params
      *
      * @param parameters ParametersTracking Object, with the information to get
-     * @return  An int with the total number of trackings that match then values of ParametersTracking in param,
+     * @return  An Tracking List with trackings that match then values of ParametersTracking in param,
      *          accessing the trackings should be made through the ParametersTracking passed as param
      * @throws Classes.AftershipAPIException  If the request response an error
      * @throws  java.io.IOException If there is a problem with the connection
@@ -354,23 +359,47 @@ public class ConnectionAPI extends AsyncTask<ConnectionAPIMethods,Void,Connectio
      * @see     ParametersTracking
      * @see     Tracking
      **/
-    public int getTracking(ParametersTracking parameters)throws AftershipAPIException,IOException,ParseException,JSONException{
+    public List<Tracking> getTrackings(ParametersTracking parameters)throws AftershipAPIException,IOException,ParseException,JSONException{
         List<Tracking> trackingList = null;
-        int size =0;
         JSONObject response = this.request("GET","/trackings?"+parameters.generateQueryString(),null);
         JSONArray trackingJSON = response.getJSONObject("data").getJSONArray("trackings");
         if(trackingJSON.length()!=0) {
-            size = response.getJSONObject("data").getInt("count");
             trackingList = new ArrayList<Tracking>(trackingJSON.length());
             for (int i = 0; i < trackingJSON.length(); i++) {
                 trackingList.add(new Tracking(trackingJSON.getJSONObject(i)));
             }
-            parameters.setBuffer(trackingList);
-            parameters.setTotal(size);
-            parameters.setConnectionApi(this);
+
         }
 
-        return size;
+        return trackingList;
+    }
+
+    /**
+     * Get next page of Trackings from your account with the ParametersTracking defined in the params
+     *
+     * @param parameters ParametersTracking Object, with the information to get
+     * @return  The next page of Tracking List that match then values of ParametersTracking in param,
+     *          accessing the trackings should be made through the ParametersTracking passed as param
+     * @throws Classes.AftershipAPIException  If the request response an error
+     * @throws  java.io.IOException If there is a problem with the connection
+     * @throws  java.text.ParseException    If the response can not be parse to JSONObject
+     * @see     ParametersTracking
+     * @see     Tracking
+     **/
+    public List<Tracking> getTrackingsNext(ParametersTracking parameters)
+            throws AftershipAPIException,IOException,ParseException,JSONException{
+        List<Tracking> trackingList = null;
+        parameters.setPage(parameters.getPage()+1);
+        JSONObject response = this.request("GET","/trackings?"+parameters.generateQueryString(),null);
+        JSONArray trackingJSON = response.getJSONObject("data").getJSONArray("trackings");
+        if(trackingJSON.length()!=0) {
+            trackingList = new ArrayList<Tracking>(trackingJSON.length());
+            for (int i = 0; i < trackingJSON.length(); i++) {
+                trackingList.add(new Tracking(trackingJSON.getJSONObject(i)));
+            }
+
+        }
+        return trackingList;
     }
 
     /**
@@ -385,7 +414,7 @@ public class ConnectionAPI extends AsyncTask<ConnectionAPIMethods,Void,Connectio
      * @throws  java.text.ParseException    If the response can not be parse to JSONObject
      * @see     Tracking
      **/
-    public List<Tracking> getTracking(int page)throws AftershipAPIException,IOException,ParseException,JSONException{
+    public List<Tracking> getTrackings(int page)throws AftershipAPIException,IOException,ParseException,JSONException{
 
         List<Tracking> trackingList = null;
 
@@ -632,24 +661,32 @@ public class ConnectionAPI extends AsyncTask<ConnectionAPIMethods,Void,Connectio
         }
     }
 
-    public List<Courier> getCouriersReturn() {
-        return couriersReturn;
-    }
+    public Object getReturn(){
+        switch (this.method.getNumberMethod()) {
+            case 0://getLastCheckpoint
+                return checkpointReturn;
+            case 1: //reactivate
+                return confirmationReturn;
+            case 2://getTrackingByNumber
+                return this.trackingReturn;
+            case 3://getTracking
+                return trackingsReturn;
+            case 4://deleteTracking
+                return this.confirmationReturn;
+            case 5://postTracking
+                return this.trackingReturn;
+            case 6://putTracking
+                return this.trackingReturn;
+            case 7://getCouriers(7)
+                return this.couriersReturn;
+            case 8://detectCouriers(8)
+                return this.couriersReturn;
+            case 9://getTrackingsNext(9)
+                return this.trackingsReturn;
+            default:
+                return null;
 
-    public Checkpoint getCheckpointReturn() {
-        return checkpointReturn;
-    }
-
-    public Tracking getTrackingReturn() {
-        return trackingReturn;
-    }
-
-    public boolean isConfirmationReturn() {
-        return confirmationReturn;
-    }
-
-    public List<Tracking> getTrackingsReturn() {
-        return trackingsReturn;
+        }
     }
 
     public Exception getException() {
