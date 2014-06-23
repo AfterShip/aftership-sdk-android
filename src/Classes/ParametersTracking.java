@@ -56,22 +56,12 @@ public class ParametersTracking {
      * Example: 'en' Support Chinese to English translation for  china-ems  and  china-post  only */
     private String lang;
 
-    /** A buffer where save the information of the las petition and access it later*/
-    private List<Tracking> buffer;
-
-    /** Saves which is the last element returned by Next()*/
-    private int position;
-
     /** Total of tracking elements from the user that match the ParametersTracking object*/
     private int total;
-
-    /** Save a reference to ConnectionAPI, so it's possible in the next() method call through this instance*/
-    private ConnectionAPI connectionApi;
 
     public ParametersTracking() {
         this.page = 1;
         this.limit = 100;
-        this.position=0;
     }
 
     public void addSlug(String slug) {
@@ -222,28 +212,12 @@ public class ParametersTracking {
         this.lang = lang;
     }
 
-    public List<Tracking> getBuffer() {
-        return buffer;
-    }
-
-    public void setBuffer(List<Tracking> buffer) {
-        this.buffer = buffer;
-    }
-
     public int getTotal() {
         return total;
     }
 
     public void setTotal(int total) {
         this.total = total;
-    }
-
-    public ConnectionAPI getConnectionApi() {
-        return connectionApi;
-    }
-
-    public void setConnectionApi(ConnectionAPI connectionApi) {
-        this.connectionApi = connectionApi;
     }
 
     /**

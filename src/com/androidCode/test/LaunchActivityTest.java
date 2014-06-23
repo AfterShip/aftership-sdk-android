@@ -558,7 +558,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         assertTrue(await);
         assertNull(this.exception);
         //because should be 83 in total, and we are making the page limit as 50
-        assertEquals("Should be 32 trackings",32 , this.returnTrackings.size());
+        assertEquals("Should be 32 trackings",9 , this.returnTrackings.size());
 
     }
 
@@ -764,13 +764,13 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                //create an AsyncTask and execute it (we add the latch countDown).
-                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getLastCheckpoint, listener,"GM605112270084510370", "dhl-global-mail") {
-                    protected void onPostExecute(ConnectionAPI connection) {
-                        super.onPostExecute(connection);
-                        LaunchActivityTest.this.latch.countDown();
-                    }
-                }.execute();
+            //create an AsyncTask and execute it (we add the latch countDown).
+            new ConnectionAPI(API_KEY, ConnectionAPIMethods.getLastCheckpoint, listener,"GM605112270084510370", "dhl-global-mail") {
+                protected void onPostExecute(ConnectionAPI connection) {
+                    super.onPostExecute(connection);
+                    LaunchActivityTest.this.latch.countDown();
+                }
+            }.execute();
             }
         });
 

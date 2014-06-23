@@ -23,7 +23,7 @@ import android.os.AsyncTask;
  * funcntionalities in different methods
  * Created by User on 10/6/14
  */
-public class ConnectionAPI extends AsyncTask<ConnectionAPIMethods,Void,ConnectionAPI> {
+public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
 
     private static String URL_SERVER = "https://api.aftership.com/";
     private static String VERSION_API = "v3";
@@ -56,6 +56,13 @@ public class ConnectionAPI extends AsyncTask<ConnectionAPIMethods,Void,Connectio
     /** show the progresion of the dialog*/
     private ProgressDialog dialog;
 
+    /**
+     * Constructor with the basic information, only can be called internally
+     *
+     * @param method Which method as an acction (getTracking, deleteTracking...)
+     * @param callback Object where execute the callback
+     * @param keyAPI KEY API link to the user account
+     **/
     private  ConnectionAPI(ConnectionAPIMethods method,AsyncTaskCompleteListener<ConnectionAPI> callback, String keyAPI){
         this.method = method;
         this.callback = callback;
@@ -64,29 +71,53 @@ public class ConnectionAPI extends AsyncTask<ConnectionAPIMethods,Void,Connectio
         this.dialog = callback instanceof Context? new ProgressDialog((Context)callback):null;
     }
 
+    /**
+     * Constructor for getCouriers
+     *
+     * @param keyAPI KEY API link to the user account
+     * @param method Which method as an acction (getTracking, deleteTracking...)
+     * @param callback Object where execute the callback
+     **/
     public ConnectionAPI(String keyAPI,ConnectionAPIMethods method,AsyncTaskCompleteListener<ConnectionAPI> callback){
         this(method,callback,keyAPI);
         if(method!=ConnectionAPIMethods.getCouriers)
-           this.exception = new AftershipAPIException("The consntructor only can be called with ConnectionAPIMethods.getCouriers");
+           this.exception = new AftershipAPIException("The constructor only can be called with ConnectionAPIMethods.getCouriers");
 
     }
 
+    /**
+     * Constructor for detectCouriers
+     *
+     * @param keyAPI KEY API link to the user account
+     * @param method Which method as an acction (getTracking, deleteTracking...)
+     * @param callback Object where execute the callback
+     * @param trackingNumber String with the tracking number to detect
+     **/
     public ConnectionAPI(String keyAPI,ConnectionAPIMethods method,AsyncTaskCompleteListener<ConnectionAPI> callback,
                          String trackingNumber){
         this(method,callback,keyAPI);
         if(method!=ConnectionAPIMethods.detectCouriers)
-            this.exception =  new AftershipAPIException("The consntructor only can be called with " +
+            this.exception =  new AftershipAPIException("The constructor only can be called with " +
                     "ConnectionAPIMethods.detectCouriers");
         this.trackingNumber = trackingNumber;
 
     }
 
+    /**
+     * Constructor for getTrackingByNumber, deleteTracking, reactivate and getLastCheckpoint
+     *
+     * @param keyAPI KEY API link to the user account
+     * @param method Which method as an acction (getTracking, deleteTracking...)
+     * @param callback Object where execute the callback
+     * @param trackingNumber String with the tracking number
+     * @param slug  String with the tracking of the Tracking
+     **/
     public ConnectionAPI(String keyAPI,ConnectionAPIMethods method,AsyncTaskCompleteListener<ConnectionAPI> callback,
                          String trackingNumber,String slug){
         this(method,callback,keyAPI);
         if(method!=ConnectionAPIMethods.getTrackingByNumber && method!=ConnectionAPIMethods.deleteTracking &&
                 method!=ConnectionAPIMethods.reactivate && method!=ConnectionAPIMethods.getLastCheckpoint)
-            this.exception =  new AftershipAPIException("The consntructor only can be called with" +
+            this.exception =  new AftershipAPIException("The constructor only can be called with" +
                     "ConnectionAPIMethods.getTrackingByNumber,ConnectionAPIMethods.deleteTracking," +
                     "ConnectionAPIMethods.reactivate, ConnectionAPIMethods.getLastCheckpoint");
         this.trackingNumber = trackingNumber;
@@ -94,52 +125,94 @@ public class ConnectionAPI extends AsyncTask<ConnectionAPIMethods,Void,Connectio
 
     }
 
+    /**
+     * Constructor for getTrackings and getTrackingsNext
+     *
+     * @param keyAPI KEY API link to the user account
+     * @param method Which method as an acction (getTracking, deleteTracking...)
+     * @param callback Object where execute the callback
+     * @param parameters ParametersTracking with the information of the getParameters
+     **/
     public ConnectionAPI(String keyAPI,ConnectionAPIMethods method, AsyncTaskCompleteListener<ConnectionAPI> callback,
                          ParametersTracking parameters){
         this(method,callback,keyAPI);
         if(method!=ConnectionAPIMethods.getTrackings && method!=ConnectionAPIMethods.getTrackingsNext)
-           this.exception =  new AftershipAPIException("The consntructor only can be called with ConnectionAPIMethods.getTracking" +
+           this.exception =  new AftershipAPIException("The constructor only can be called with ConnectionAPIMethods.getTracking" +
                    "or ConnectionAPIMethods.getTrackingsNext");
         this.parameters = parameters;
 
     }
 
+    /**
+     * Constructor for getTrackings
+     *
+     * @param keyAPI KEY API link to the user account
+     * @param method Which method as an acction (getTracking, deleteTracking...)
+     * @param callback Object where execute the callback
+     * @param page Number of page to get
+     **/
     public ConnectionAPI(String keyAPI,ConnectionAPIMethods method,AsyncTaskCompleteListener<ConnectionAPI> callback,
                          int page){
         this(method,callback,keyAPI);
         if(method!=ConnectionAPIMethods.getTrackings)
-            this.exception =  new AftershipAPIException("The consntructor only can be called with ConnectionAPIMethods.getTracking");
+            this.exception =  new AftershipAPIException("The constructor only can be called with ConnectionAPIMethods.getTracking");
         this.page = page;
     }
 
+    /**
+     * Constructor for postTracking and putTracking
+     *
+     * @param keyAPI KEY API link to the user account
+     * @param method Which method as an acction (getTracking, deleteTracking...)
+     * @param callback Object where execute the callback
+     * @param tracking Tracking to post or put
+     **/
     public ConnectionAPI(String keyAPI,ConnectionAPIMethods method,AsyncTaskCompleteListener<ConnectionAPI> callback,
                          Tracking tracking){
         this(method,callback,keyAPI);
         if(method!=ConnectionAPIMethods.postTracking && method!=ConnectionAPIMethods.putTracking)
-            this.exception =  new AftershipAPIException("The consntructor only can be called with," +
+            this.exception =  new AftershipAPIException("The constructor only can be called with," +
                     " ConnectionAPIMethods.postTracking or ConnectionAPIMethods.putTracking");
         this.tracking = tracking;
     }
 
+    /**
+     * Constructor for getLastCheckpoint and getTrackingByNumber with parameters
+     *
+     * @param keyAPI KEY API link to the user account
+     * @param method Which method as an acction (getTracking, deleteTracking...)
+     * @param callback Object where execute the callback
+     * @param trackingNumber Tracking to post or put
+     * @param slug Slug of the tracking
+     * @param fields List of the fields we want
+     * @param lang Language
+     **/
     public ConnectionAPI(String keyAPI,ConnectionAPIMethods method,AsyncTaskCompleteListener<ConnectionAPI> callback,
                          String trackingNumber,String slug, List<Field> fields, String lang){
         this(method,callback,keyAPI);
-        if(method!=ConnectionAPIMethods.postTracking && method!=ConnectionAPIMethods.putTracking)
-            this.exception =  new AftershipAPIException("The consntructor only can be called with" +
-                    " ConnectionAPIMethods.postTracking or method!=ConnectionAPIMethods.putTracking");
+        if(method!=ConnectionAPIMethods.getLastCheckpoint && method!=ConnectionAPIMethods.getTrackingByNumber)
+            this.exception =  new AftershipAPIException("The constructor only can be called with" +
+                    " ConnectionAPIMethods.getLastCheckpoint or method!=ConnectionAPIMethods.getTrackingByNumber");
         this.trackingNumber = trackingNumber;
         this.slug = slug;
         this.fields = fields;
         this.lang = lang;
     }
 
+    /**
+     * Before calling the request we show a message with this information
+     **/
     protected void onPreExecute() {
         if(dialog!=null){
-            this.dialog.setMessage("Progress start");
+            this.dialog.setMessage("Calling API");
             this.dialog.show();
         }
     }
-    protected ConnectionAPI doInBackground(ConnectionAPIMethods... connectionAPI){
+
+    /**
+     * In this method we declare the code that we want to run asynchronous
+     **/
+    protected ConnectionAPI doInBackground(Void... params){
 //        getLastCheckpoint(0),reactivate(1),getTrackingByNumber(2),getTracking(3),deleteTracking(4),
 //                postTracking(5),putTracking(6),getCouriers(7),detectCouriers(8);
         if(this.exception ==null) {
@@ -196,6 +269,9 @@ public class ConnectionAPI extends AsyncTask<ConnectionAPIMethods,Void,Connectio
         return this;
     }
 
+    /**
+     * Call the callback and dismiss the dialog
+     **/
     protected void onPostExecute(ConnectionAPI result) {
         if (dialog!=null && dialog.isShowing()) {
             try{
@@ -368,7 +444,7 @@ public class ConnectionAPI extends AsyncTask<ConnectionAPIMethods,Void,Connectio
             for (int i = 0; i < trackingJSON.length(); i++) {
                 trackingList.add(new Tracking(trackingJSON.getJSONObject(i)));
             }
-
+            parameters.setTotal(trackingList.size());
         }
 
         return trackingList;
@@ -388,18 +464,9 @@ public class ConnectionAPI extends AsyncTask<ConnectionAPIMethods,Void,Connectio
      **/
     public List<Tracking> getTrackingsNext(ParametersTracking parameters)
             throws AftershipAPIException,IOException,ParseException,JSONException{
-        List<Tracking> trackingList = null;
         parameters.setPage(parameters.getPage()+1);
-        JSONObject response = this.request("GET","/trackings?"+parameters.generateQueryString(),null);
-        JSONArray trackingJSON = response.getJSONObject("data").getJSONArray("trackings");
-        if(trackingJSON.length()!=0) {
-            trackingList = new ArrayList<Tracking>(trackingJSON.length());
-            for (int i = 0; i < trackingJSON.length(); i++) {
-                trackingList.add(new Tracking(trackingJSON.getJSONObject(i)));
-            }
 
-        }
-        return trackingList;
+        return this.getTrackings(parameters);
     }
 
     /**
@@ -661,6 +728,9 @@ public class ConnectionAPI extends AsyncTask<ConnectionAPIMethods,Void,Connectio
         }
     }
 
+    /**
+     * Return an Object depending of what method was used to create the object.
+     **/
     public Object getReturn(){
         switch (this.method.getNumberMethod()) {
             case 0://getLastCheckpoint
