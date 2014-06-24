@@ -32,7 +32,7 @@ proguard/
 
 # =============== RubyMine.gitignore
 # =============== PhPStorm.gitignore
-#.idea
+.idea
 
 
 # =============== OSX.gitignore
