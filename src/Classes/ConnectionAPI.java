@@ -15,7 +15,7 @@ import java.io.OutputStreamWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import Enums.Field;
+import Enums.*;
 import android.os.AsyncTask;
 
 /**
@@ -37,7 +37,7 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
     /** Parameters TrackingNumber,slug fields, lang*/
     private String trackingNumber;
     private String slug;
-    private List<Field> fields;
+    private List<?> fields;
     private String lang;
     /**Parameter ParametersTracking parameters **/
     private ParametersTracking parameters;
@@ -170,9 +170,10 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
     public ConnectionAPI(String keyAPI,ConnectionAPIMethods method,AsyncTaskCompleteListener<ConnectionAPI> callback,
                          Tracking tracking){
         this(method,callback,keyAPI);
-        if(method!=ConnectionAPIMethods.postTracking && method!=ConnectionAPIMethods.putTracking)
-            this.exception =  new AftershipAPIException("The constructor only can be called with," +
+        if(method!=ConnectionAPIMethods.postTracking && method!=ConnectionAPIMethods.putTracking) {
+            this.exception = new AftershipAPIException("The constructor only can be called with," +
                     " ConnectionAPIMethods.postTracking or ConnectionAPIMethods.putTracking");
+        }
         this.tracking = tracking;
     }
 
@@ -184,19 +185,22 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
      * @param callback Object where execute the callback
      * @param trackingNumber Tracking to post or put
      * @param slug Slug of the tracking
-     * @param fields List of the fields we want
+     * @param fields List of the fields we want, if the method is getLastCheckpoint should be List<FieldCheckpoint> if
+     *               the method is getTrackingByNumber should be List<FieldTracking>.
      * @param lang Language
      **/
     public ConnectionAPI(String keyAPI,ConnectionAPIMethods method,AsyncTaskCompleteListener<ConnectionAPI> callback,
-                         String trackingNumber,String slug, List<Field> fields, String lang){
+                         String trackingNumber,String slug, List<?> fields, String lang){
         this(method,callback,keyAPI);
-        if(method!=ConnectionAPIMethods.getLastCheckpoint && method!=ConnectionAPIMethods.getTrackingByNumber)
-            this.exception =  new AftershipAPIException("The constructor only can be called with" +
+        if(method!=ConnectionAPIMethods.getLastCheckpoint && method!=ConnectionAPIMethods.getTrackingByNumber) {
+            this.exception = new AftershipAPIException("The constructor only can be called with" +
                     " ConnectionAPIMethods.getLastCheckpoint or method!=ConnectionAPIMethods.getTrackingByNumber");
+        }
         this.trackingNumber = trackingNumber;
         this.slug = slug;
-        this.fields = fields;
         this.lang = lang;
+        this.fields = fields;
+
     }
 
     /**
@@ -321,14 +325,14 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
      * @throws   java.text.ParseException    If the response can not be parse to JSONObject
      * @see Checkpoint
      **/
-    public Checkpoint getLastCheckpoint(String trackingNumber,String slug,List<Field> fields, String lang)
+    public Checkpoint getLastCheckpoint(String trackingNumber,String slug,List<?> fields, String lang)
             throws AftershipAPIException,IOException,JSONException,ParseException,JSONException{
 
         String params;
         QueryString qs = new QueryString();
         if (fields!=null) qs.add("fields", fields);
-        if (lang!=null || !lang.equals("")) qs.add("lang",lang);
-        params = qs.toString().replace('&','?');
+        if (lang!=null && !lang.equals("")) qs.add("lang",lang);
+        params = qs.toString().replaceFirst("&", "?");
 
         JSONObject response = this.request("GET","/last_checkpoint/"+slug+"/"+trackingNumber+params,null);
         JSONObject checkpointJSON = response.getJSONObject("data").getJSONObject("checkpoint");
@@ -404,14 +408,14 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
      * @throws  java.text.ParseException    If the response can not be parse to JSONObject
      * @see     Tracking
      **/
-    public Tracking getTrackingByNumber(String trackingNumber,String slug,List<Field> fields,String lang)
+    public Tracking getTrackingByNumber(String trackingNumber,String slug,List<?> fields,String lang)
             throws AftershipAPIException,IOException,ParseException,JSONException{
 
         String params;
         QueryString qs = new QueryString();
         if (fields!=null) qs.add("fields", fields);
-        if (lang!=null || !lang.equals("")) qs.add("lang",lang);
-        params = qs.toString().replace('&','?');
+        if (lang!=null && !lang.equals("")) qs.add("lang",lang);
+        params = qs.toString().replaceFirst("&", "?");
 
         JSONObject response = this.request("GET","/trackings/"+slug+"/"+trackingNumber+params,null);
         JSONObject trackingJSON = response.getJSONObject("data").getJSONObject("tracking");

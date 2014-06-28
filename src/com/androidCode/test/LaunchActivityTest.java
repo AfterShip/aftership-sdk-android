@@ -5,6 +5,7 @@ import Enums.*;
 import Enums.ConnectionAPIMethods;
 import android.test.InstrumentationTestCase;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -149,7 +150,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
             } catch (Throwable e) {
                 System.out.println("**" + e.getMessage());
             }
-            boolean await = this.latch.await(30, TimeUnit.SECONDS);
+            boolean await = this.latch.await(60, TimeUnit.SECONDS);
             assertTrue(await);
 
             this.exception = null;
@@ -533,7 +534,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         });
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
-        assertEquals("Should be 3 trackings", 3, this.returnTrackings.size());
+        assertEquals("Should be 1 trackings", 1, this.returnTrackings.size());
         this.returnTrackings = null;
 
         this.addToCount(1);
@@ -543,8 +544,8 @@ public class LaunchActivityTest extends InstrumentationTestCase {
             public void run() {
                 //create an AsyncTask and execute it (we add the latch countDown).
                 ParametersTracking param4 = new ParametersTracking();
-                param4.setLimit(50);
-                param4.addTag(StatusTag.InTransit);
+               // param4.setLimit(55);
+                param4.addTag(StatusTag.Expired);
                 new ConnectionAPI(API_KEY, ConnectionAPIMethods.getTrackingsNext, listener, param4) {
                     protected void onPostExecute(ConnectionAPI connection) {
                         super.onPostExecute(connection);
@@ -557,8 +558,8 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
         assertNull(this.exception);
-        //because should be 83 in total, and we are making the page limit as 50
-        assertEquals("Should be 32 trackings",9 , this.returnTrackings.size());
+        //because should be 103 in total, and we are taking the next page
+        assertEquals("Should be 3 trackings",3, this.returnTrackings.size());
 
     }
 
@@ -627,6 +628,38 @@ public class LaunchActivityTest extends InstrumentationTestCase {
                 , "ResourceNotFound. Tracking does not exist.", this.exception.getMessage());
 
     }
+
+
+    public void testGetTrackingByNumber2()throws Throwable {
+        this.exception=null;
+        this.addToCount(1);
+        //delete the tracking we are going to post (in case it exist)
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                //create an AsyncTask and execute it (we add the latch countDown).
+                List<FieldTracking> fields = new ArrayList<FieldTracking>();
+                fields.add(FieldTracking.tracking_number);
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getTrackingByNumber, listener, "RC328021065CN", "canada-post",fields,null) {
+                    protected void onPostExecute(ConnectionAPI connection) {
+                        super.onPostExecute(connection);
+                        LaunchActivityTest.this.latch.countDown();
+                    }
+                }.execute();
+            }
+        });
+
+        boolean await = this.latch.await(30, TimeUnit.SECONDS);
+        assertTrue(await);
+        assertNull(this.exception);
+
+        Tracking tracking3 = this.returnTracking;
+        assertEquals("Should be equals TrackingNumber", "RC328021065CN", tracking3.getTrackingNumber());
+        assertEquals("Should be equals title", null, tracking3.getTitle());
+        assertEquals("Should be equals slug", null, tracking3.getSlug());
+        assertEquals("Should be equals checkpoint", null, tracking3.getCheckpoints());
+    }
+
 
     public void testPutTracking()throws Throwable{
 
@@ -823,5 +856,56 @@ public class LaunchActivityTest extends InstrumentationTestCase {
 
     }
 
+    public void testGetLastCheckpoint2()throws Throwable {
 
+        this.addToCount(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                //create an AsyncTask and execute it (we add the latch countDown).
+                List<FieldCheckpoint> fields = new ArrayList<FieldCheckpoint>();
+                fields.add(FieldCheckpoint.message);
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getLastCheckpoint, listener, "GM605112270084510370", "dhl-global-mail",fields,"") {
+                    protected void onPostExecute(ConnectionAPI connection) {
+                        super.onPostExecute(connection);
+                        LaunchActivityTest.this.latch.countDown();
+                    }
+                }.execute();
+            }
+        });
+
+        boolean await = this.latch.await(30, TimeUnit.SECONDS);
+        assertTrue(await);
+        assertNull(exception);
+        Checkpoint newCheckpoint1 = this.returnCheckpoint;
+        assertEquals("Should be equals message", "Delivered", newCheckpoint1.getMessage());
+        assertEquals("Should be equals",null,newCheckpoint1.getCreatedAt());
+    }
+
+    public void testGetLastCheckpoint3()throws Throwable {
+
+        this.addToCount(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                //create an AsyncTask and execute it (we add the latch countDown).
+                List<FieldCheckpoint> fields = new ArrayList<FieldCheckpoint>();
+                fields.add(FieldCheckpoint.message);
+                fields.add(FieldCheckpoint.created_at);
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getLastCheckpoint, listener, "GM605112270084510370", "dhl-global-mail",fields,"") {
+                    protected void onPostExecute(ConnectionAPI connection) {
+                        super.onPostExecute(connection);
+                        LaunchActivityTest.this.latch.countDown();
+                    }
+                }.execute();
+            }
+        });
+
+        boolean await = this.latch.await(30, TimeUnit.SECONDS);
+        assertTrue(await);
+        assertNull(exception);
+        Checkpoint newCheckpoint2 = this.returnCheckpoint;
+        assertEquals("Should be equals message", "Delivered", newCheckpoint2.getMessage());
+        assertEquals("Should be equals","2014-06-17T04:19:38+00:00",newCheckpoint2.getCreatedAt());
+    }
 }
