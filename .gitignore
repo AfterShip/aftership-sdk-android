@@ -24,9 +24,6 @@ proguard/
 
 #Log Files
 *.log
-#idea files
-idea/
-
 
 
 # =========================== DO NOT touch below v1.0.1 ===============================
