@@ -1,3 +1,17 @@
+# My things
+.idea/
+res/drawable-hdpi/
+res/drawable-ldpi/
+res/drawable-mdpi/
+res/drawable-xdpi/
+res/values/
+ftership-SDK-Android.iml
+ant.properties
+build.xml
+proguard-project.txt
+project.properties
+
+
 # Built application files
 *.apk
 *.ap_
