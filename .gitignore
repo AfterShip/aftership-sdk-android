@@ -5,7 +5,7 @@ res/drawable-ldpi/
 res/drawable-mdpi/
 res/drawable-xdpi/
 res/values/
-ftership-SDK-Android.iml
+*.iml
 ant.properties
 build.xml
 proguard-project.txt
