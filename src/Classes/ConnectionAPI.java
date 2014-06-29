@@ -14,8 +14,9 @@ import java.io.OutputStreamWriter;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import Enums.*;
+
 import android.os.AsyncTask;
 
 /**
@@ -25,8 +26,8 @@ import android.os.AsyncTask;
  */
 public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
 
-    private static String URL_SERVER = "https://api.aftership.com/";
-    private static String VERSION_API = "v3";
+    private static String URL_SERVER = "http://54.88.19.48:3003/";
+    private static String VERSION_API = "v4";
 
     private String keyAPI;
 
@@ -45,7 +46,11 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
     private int page;
     /** Parameter Tracking tracking*/
     private Tracking tracking;
-
+    /**Parameters detect tracking*/
+    private String trackingPostalCode;
+    private String trackingShipDate;
+    private String trackingAccountNumber;
+    private List<String> slugs;
     private Exception exception;
     /**returns**/
     private Checkpoint checkpointReturn;
@@ -56,6 +61,7 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
     /** show the progresion of the dialog*/
     private ProgressDialog dialog;
 
+//methods only Android SDK
     /**
      * Constructor with the basic information, only can be called internally
      *
@@ -72,7 +78,7 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
     }
 
     /**
-     * Constructor for getCouriers
+     * Constructor for getCouriers and getAllCouriers
      *
      * @param keyAPI KEY API link to the user account
      * @param method Which method as an acction (getTracking, deleteTracking...)
@@ -80,8 +86,9 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
      **/
     public ConnectionAPI(String keyAPI,ConnectionAPIMethods method,AsyncTaskCompleteListener<ConnectionAPI> callback){
         this(method,callback,keyAPI);
-        if(method!=ConnectionAPIMethods.getCouriers)
-           this.exception = new AftershipAPIException("The constructor only can be called with ConnectionAPIMethods.getCouriers");
+        if(method!=ConnectionAPIMethods.getCouriers && method!= ConnectionAPIMethods.getAllCouriers)
+           this.exception = new AftershipAPIException("The constructor only can be called with ConnectionAPIMethods.getCouriers or" +
+                   "ConnectionAPIMethods.getAllCouriers");
 
     }
 
@@ -100,7 +107,28 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
             this.exception =  new AftershipAPIException("The constructor only can be called with " +
                     "ConnectionAPIMethods.detectCouriers");
         this.trackingNumber = trackingNumber;
+    }
 
+    /**
+     * Constructor for detectCouriers
+     *
+     * @param keyAPI KEY API link to the user account
+     * @param method Which method as an acction (getTracking, deleteTracking...)
+     * @param callback Object where execute the callback
+     * @param trackingNumber String with the tracking number to detect
+     **/
+    public ConnectionAPI(String keyAPI,ConnectionAPIMethods method,AsyncTaskCompleteListener<ConnectionAPI> callback,
+                         String trackingNumber,String trackingPostalCode, String trackingShipDate,
+                         String trackingAccountNumber, List<String> slugs){
+        this(method,callback,keyAPI);
+        if(method!=ConnectionAPIMethods.detectCouriers)
+            this.exception =  new AftershipAPIException("The constructor only can be called with " +
+                    "ConnectionAPIMethods.detectCouriers");
+        this.trackingNumber = trackingNumber;
+        this.trackingPostalCode = trackingPostalCode;
+        this.trackingShipDate = trackingShipDate;
+        this.trackingAccountNumber = trackingAccountNumber;
+        this.slugs = slugs;
     }
 
     /**
@@ -170,10 +198,9 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
     public ConnectionAPI(String keyAPI,ConnectionAPIMethods method,AsyncTaskCompleteListener<ConnectionAPI> callback,
                          Tracking tracking){
         this(method,callback,keyAPI);
-        if(method!=ConnectionAPIMethods.postTracking && method!=ConnectionAPIMethods.putTracking) {
-            this.exception = new AftershipAPIException("The constructor only can be called with," +
+        if(method!=ConnectionAPIMethods.postTracking && method!=ConnectionAPIMethods.putTracking)
+            this.exception =  new AftershipAPIException("The constructor only can be called with," +
                     " ConnectionAPIMethods.postTracking or ConnectionAPIMethods.putTracking");
-        }
         this.tracking = tracking;
     }
 
@@ -185,22 +212,19 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
      * @param callback Object where execute the callback
      * @param trackingNumber Tracking to post or put
      * @param slug Slug of the tracking
-     * @param fields List of the fields we want, if the method is getLastCheckpoint should be List<FieldCheckpoint> if
-     *               the method is getTrackingByNumber should be List<FieldTracking>.
+     * @param fields List of the fields we want
      * @param lang Language
      **/
     public ConnectionAPI(String keyAPI,ConnectionAPIMethods method,AsyncTaskCompleteListener<ConnectionAPI> callback,
                          String trackingNumber,String slug, List<?> fields, String lang){
         this(method,callback,keyAPI);
-        if(method!=ConnectionAPIMethods.getLastCheckpoint && method!=ConnectionAPIMethods.getTrackingByNumber) {
-            this.exception = new AftershipAPIException("The constructor only can be called with" +
+        if(method!=ConnectionAPIMethods.getLastCheckpoint && method!=ConnectionAPIMethods.getTrackingByNumber)
+            this.exception =  new AftershipAPIException("The constructor only can be called with" +
                     " ConnectionAPIMethods.getLastCheckpoint or method!=ConnectionAPIMethods.getTrackingByNumber");
-        }
         this.trackingNumber = trackingNumber;
         this.slug = slug;
-        this.lang = lang;
         this.fields = fields;
-
+        this.lang = lang;
     }
 
     /**
@@ -233,17 +257,21 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
                         this.confirmationReturn = this.reactivate(this.trackingNumber, this.slug);
                         break;
                     case 2://getTrackingByNumber
-                        if (this.fields == null && this.lang == null)
+                        if (this.fields == null && this.lang == null) {
                             this.trackingReturn = this.getTrackingByNumber(this.trackingNumber, this.slug);
-                        else
+                        }
+                        else {
                             this.trackingReturn = this.getTrackingByNumber(
                                     this.trackingNumber, this.slug, this.fields, this.lang);
+                        }
                         break;
                     case 3://getTracking
-                        if (this.parameters == null)
+                        if (this.parameters == null) {
                             this.trackingsReturn = this.getTrackings(this.page);
-                        else
+                        }
+                        else {
                             this.trackingsReturn = this.getTrackings(this.parameters);
+                        }
                         break;
                     case 4://deleteTracking
                         this.confirmationReturn = this.deleteTracking(this.trackingNumber, this.slug);
@@ -258,12 +286,20 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
                         this.couriersReturn = this.getCouriers();
                         break;
                     case 8://detectCouriers(8)
-                        this.couriersReturn = this.detectCouriers(this.trackingNumber);
+                        if (this.trackingPostalCode == null && trackingShipDate==null && trackingAccountNumber==null
+                                && slugs==null){
+                            this.couriersReturn = this.detectCouriers(this.trackingNumber);
+                        }else{
+                            this.couriersReturn = this.detectCouriers(this.trackingNumber,this.trackingPostalCode,
+                                    this.trackingShipDate,this.trackingAccountNumber,this.slugs);
+                        }
                         break;
                     case 9://getTrackingsNext(9)
                         this.trackingsReturn = this.getTrackingsNext(this.parameters);
                         break;
-
+                    case 10://getAllCouriers(10)
+                        this.couriersReturn = this.getAllCouriers();
+                        break;
                 }
             } catch (Exception e) {
                 this.exception = e;
@@ -284,6 +320,41 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
         }
         callback.onTaskComplete(result);
     }
+
+    /**
+     * Return an Object depending of what method was used to create the object.
+     **/
+    public Object getReturn(){
+        switch (this.method.getNumberMethod()) {
+            case 0://getLastCheckpoint
+                return checkpointReturn;
+            case 1: //reactivate
+                return confirmationReturn;
+            case 2://getTrackingByNumber
+                return this.trackingReturn;
+            case 3://getTracking
+                return trackingsReturn;
+            case 4://deleteTracking
+                return this.confirmationReturn;
+            case 5://postTracking
+                return this.trackingReturn;
+            case 6://putTracking
+                return this.trackingReturn;
+            case 7://getCouriers(7)
+                return this.couriersReturn;
+            case 8://detectCouriers(8)
+                return this.couriersReturn;
+            case 9://getTrackingsNext(9)
+                return this.trackingsReturn;
+            case 10://getAllCouriers()
+                return this.couriersReturn;
+            default:
+                return null;
+
+        }
+    }
+
+// end of methods only Android
 
     /**
      * Return the tracking information of the last checkpoint of a single tracking
@@ -332,7 +403,7 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
         QueryString qs = new QueryString();
         if (fields!=null) qs.add("fields", fields);
         if (lang!=null && !lang.equals("")) qs.add("lang",lang);
-        params = qs.toString().replaceFirst("&", "?");
+        params = qs.toString().replaceFirst("&","?");
 
         JSONObject response = this.request("GET","/last_checkpoint/"+slug+"/"+trackingNumber+params,null);
         JSONObject checkpointJSON = response.getJSONObject("data").getJSONObject("checkpoint");
@@ -415,7 +486,7 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
         QueryString qs = new QueryString();
         if (fields!=null) qs.add("fields", fields);
         if (lang!=null && !lang.equals("")) qs.add("lang",lang);
-        params = qs.toString().replaceFirst("&", "?");
+        params = qs.toString().replaceFirst("&","?");
 
         JSONObject response = this.request("GET","/trackings/"+slug+"/"+trackingNumber+params,null);
         JSONObject trackingJSON = response.getJSONObject("data").getJSONObject("tracking");
@@ -568,14 +639,41 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
 
     }
     /**
-    * Return a list of couriers supported by AfterShip along with their names,
-    * URLs and slugs
-    *
-    * @return   A list of Object Courier, with all the couriers supported by the API
-    * @throws   AftershipAPIException  If the request response an error
-    * @throws   java.io.IOException If there is a problem with the connection
-    * @throws   java.text.ParseException    If the response can not be parse to JSONObject
-    **/
+     * Return a list of couriers supported by AfterShip along with their names,
+     * URLs and slugs
+     *
+     * @return   A list of Object Courier, with all the couriers supported by the API
+     * @throws   AftershipAPIException  If the request response an error
+     * @throws   java.io.IOException If there is a problem with the connection
+     * @throws   java.text.ParseException    If the response can not be parse to JSONObject
+     **/
+    public List<Courier> getAllCouriers() throws AftershipAPIException,IOException,ParseException,JSONException{
+
+        JSONObject response = this.request("GET","/couriers/all",null);
+
+
+        JSONArray couriersJSON = response.getJSONObject("data").getJSONArray("couriers");
+        List<Courier> couriers = new ArrayList<Courier>(couriersJSON.length());
+
+        JSONObject element;
+
+        for (int i = 0; i < couriersJSON.length(); i++) {
+            element = couriersJSON.getJSONObject(i);
+
+            Courier newCourier = new Courier(element);
+            couriers.add(newCourier);
+        }
+        return couriers;
+    }
+
+    /**
+     * Return a list of user couriers enabled by user's account along their names, URLs, slugs, required fields.
+     *
+     * @return   A list of Object Courier, with all the couriers supported by the API
+     * @throws   AftershipAPIException  If the request response an error
+     * @throws   java.io.IOException If there is a problem with the connection
+     * @throws   java.text.ParseException    If the response can not be parse to JSONObject
+     **/
     public List<Courier> getCouriers() throws AftershipAPIException,IOException,ParseException,JSONException{
 
         JSONObject response = this.request("GET","/couriers",null);
@@ -594,21 +692,25 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
         }
         return couriers;
     }
-
-     /**
+    /**
      * Get a list of matched couriers for a tracking number based on the tracking number format
      * Note, only check the couriers you have defined in your account
      *
      * @param trackingNumber tracking number to match with couriers
      * @return A List of Couriers objects that match the provided trackingNumber
      * @throws AftershipAPIException if the request response an error
-      * Invalid JSON data. If the tracking number doesn't match any courier defined in your account,
-      * or it doesn't match any courier defined in Aftership
+     * Invalid JSON data. If the tracking number doesn't match any courier defined in your account,
+     * or it doesn't match any courier defined in Aftership
      * @throws  java.io.IOException If there is a problem with the connection
      * @throws  java.text.ParseException    If the response can not be parse to JSONObject
      **/
-    public List<Courier> detectCouriers(String trackingNumber)throws AftershipAPIException,IOException,ParseException,JSONException{
-        JSONObject response = this.request("GET","/couriers/detect/"+trackingNumber,null);
+    public List<Courier> detectCouriers(String trackingNumber)
+            throws AftershipAPIException,IOException,ParseException,JSONException{
+        JSONObject body = new JSONObject();
+        if (trackingNumber == null || trackingNumber.equals(""))
+            throw new AftershipAPIException("the tracking number should be always informed for the method detectCouriers");
+        body.put("tracking_number",trackingNumber);
+        JSONObject response = this.request("POST","/couriers/detect",body);
         List<Courier> couriers = new ArrayList<Courier>();
 
         JSONArray couriersJSON = response.getJSONObject("data").getJSONArray("couriers");
@@ -623,6 +725,59 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
         return couriers;
     }
 
+    /**
+     * Get a list of matched couriers for a tracking number based on the tracking number format
+     * Note, only check the couriers you have defined in your account
+     *
+     * @param trackingNumber Tracking number to match with couriers (mandatory)
+     * @param trackingPostalCode The postal code of the ship to address. Required by some couriers, such as `dx` (optional)
+     * @param trackingShipDate Usually it is refer to the posting date of the shipment, format in YYYYMMDD.
+     *                         Required by some couriers, such as `deutsch-post`.(optional)
+     * @param trackingAccountNumber The account number for particular courier. Required by some couriers,
+     *                              such as `dynamic-logistics`.(optional)
+     * @param slugs The slug of couriers to detect.
+     * @return A List of Couriers objects that match the provided trackingNumber
+     * @throws AftershipAPIException if the request response an error
+     * Invalid JSON data. If the tracking number doesn't match any courier defined in your account,
+     * or it doesn't match any courier defined in Aftership
+     * @throws  java.io.IOException If there is a problem with the connection
+     * @throws  java.text.ParseException    If the response can not be parse to JSONObject
+     **/
+    public List<Courier> detectCouriers(String trackingNumber,String trackingPostalCode, String trackingShipDate,
+                                        String trackingAccountNumber, List<String> slugs)
+            throws AftershipAPIException,IOException,ParseException,JSONException{
+        JSONObject body = new JSONObject();
+
+        if (trackingNumber == null || trackingNumber.equals(""))
+            throw new AftershipAPIException("Tracking number should be always informed for the method detectCouriers");
+        body.put("tracking_number",trackingNumber);
+        if (trackingPostalCode!= null && !trackingPostalCode.equals(""))
+            body.put("tracking_postal_code",trackingPostalCode);
+        if (trackingShipDate!= null && !trackingShipDate.equals(""))
+            body.put("tracking_ship_date",trackingShipDate);
+        if (trackingAccountNumber!= null && !trackingAccountNumber.equals(""))
+            body.put("tracking_account_number",trackingAccountNumber);
+
+        if (slugs != null && slugs.size()!=0) {
+
+            JSONArray slugsJSON = new JSONArray(slugs);
+            body.put("slugs", slugsJSON);
+        }
+
+        JSONObject response = this.request("POST","/couriers/detect",body);
+        List<Courier> couriers = new ArrayList<Courier>();
+
+        JSONArray couriersJSON = response.getJSONObject("data").getJSONArray("couriers");
+        JSONObject element;
+
+        for (int i = 0; i < couriersJSON.length(); i++) {
+            element = couriersJSON.getJSONObject(i);
+
+            Courier newCourier = new Courier(element);
+            couriers.add(newCourier);
+        }
+        return couriers;
+    }
 
     /**
      * make a request to the HTTP API of Aftership
@@ -677,16 +832,18 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
      * Check the status of a http response and if the status is an error throws an exception
      *
      * @param status Status of the connection response
-     * @exception AftershipAPIException A customize exception with a different message
+     * @exception AftershipAPIException A customize exception with a message
      * depending of the status error
      **/
-    public void checkAPIResponse(int status,HttpURLConnection connection)throws AftershipAPIException,IOException,ParseException,JSONException{
-        BufferedReader rd;
-        StringBuilder sb;
-        String message = "";
+    public void checkAPIResponse(int status,HttpURLConnection connection)
+            throws AftershipAPIException,IOException,ParseException,JSONException{
 
-        if (status>201)
-        {
+        if (status>201){
+
+            BufferedReader rd;
+            StringBuilder sb;
+            String message = "";
+            String type = "";
             rd  = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
             sb = new StringBuilder();
             String line;
@@ -695,29 +852,19 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
                 sb.append(line + '\n');
             }
             JSONObject response = new JSONObject(sb.toString());
-            message = response.getJSONObject("meta").getString("error_message");
-        }
+            JSONObject meta = response.has("meta")?response.getJSONObject("meta"):new JSONObject();
+            JSONObject data = response.has("data")?response.getJSONObject("data"):new JSONObject();
+            message = meta.has("message")?meta.getString("message"):"";
+            type = meta.has("type")?meta.getString("type"):"";
+            StringBuilder newInformation = new StringBuilder();
+            Iterator<?> keys = data.keys();
+            String key;
+            while( keys.hasNext() ) {
+                key = (String) keys.next();
+                newInformation.append(" " + key + " = " + data.getString(key));
+            }
 
-        switch (status){
-            case 200:
-            case 201:
-                break;
-            case 400:
-                throw new AftershipAPIException("Invalid JSON data. "+message);
-            case 401:
-                throw new AftershipAPIException("InvalidCredentials. "+message);
-            case 402:
-                throw new AftershipAPIException("Request Failed. "+message);
-            case 404:
-                throw new AftershipAPIException("ResourceNotFound. "+message);
-            case 409:
-                throw new AftershipAPIException("InvalidArgument. "+message);
-            case 500:
-            case 502:
-            case 503:
-            case 504:
-                throw new AftershipAPIException("Server errors - something went wrong on AfterShip's end. "+message);
-
+            throw new AftershipAPIException((type+". "+message+" "+newInformation.toString()).trim());
         }
 
     }
@@ -729,37 +876,6 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
             System.out.println(finalResult.toString(4)); // To string method prints it with specified indentation.
         }catch( Exception e){
             System.out.println("exception printing pretty JSON: "+e.getMessage() );
-        }
-    }
-
-    /**
-     * Return an Object depending of what method was used to create the object.
-     **/
-    public Object getReturn(){
-        switch (this.method.getNumberMethod()) {
-            case 0://getLastCheckpoint
-                return checkpointReturn;
-            case 1: //reactivate
-                return confirmationReturn;
-            case 2://getTrackingByNumber
-                return this.trackingReturn;
-            case 3://getTracking
-                return trackingsReturn;
-            case 4://deleteTracking
-                return this.confirmationReturn;
-            case 5://postTracking
-                return this.trackingReturn;
-            case 6://putTracking
-                return this.trackingReturn;
-            case 7://getCouriers(7)
-                return this.couriersReturn;
-            case 8://detectCouriers(8)
-                return this.couriersReturn;
-            case 9://getTrackingsNext(9)
-                return this.trackingsReturn;
-            default:
-                return null;
-
         }
     }
 

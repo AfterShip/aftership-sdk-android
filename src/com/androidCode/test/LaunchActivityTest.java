@@ -100,6 +100,9 @@ public class LaunchActivityTest extends InstrumentationTestCase {
                     case 9://getTrackingsNext(9)
                         LaunchActivityTest.this.returnTrackings = (List<Tracking>)result.getReturn();
                         break;
+                    case 10://getAllCouriers(10)
+                        LaunchActivityTest.this.returnCoriers = (List<Courier>)result.getReturn();
+                        break;
                 }
             }
         };
@@ -150,7 +153,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
             } catch (Throwable e) {
                 System.out.println("**" + e.getMessage());
             }
-            boolean await = this.latch.await(60, TimeUnit.SECONDS);
+            boolean await = this.latch.await(30, TimeUnit.SECONDS);
             assertTrue(await);
 
             this.exception = null;
@@ -180,6 +183,43 @@ public class LaunchActivityTest extends InstrumentationTestCase {
                 //create an AsyncTask and execute it (we add the latch countDown).
                 //calll to getCouriers
                 new ConnectionAPI(API_KEY, ConnectionAPIMethods.getCouriers, listener) {
+                    protected void onPostExecute(ConnectionAPI connection) {
+                        super.onPostExecute(connection);
+                        LaunchActivityTest.this.latch.countDown();
+                    }
+                }.execute();
+            }
+        });
+
+        boolean await = this.latch.await(30, TimeUnit.SECONDS);
+        assertTrue(await);
+        //total Couriers returned
+        assertEquals("It should return total couriers", 6, this.returnCoriers.size());
+        //check first courier
+        assertEquals("First courier slug", "usps", this.returnCoriers.get(0).getSlug());
+        assertEquals("First courier name", "USPS", this.returnCoriers.get(0).getName());
+        assertEquals("First courier phone", "+1 800-275-8777", this.returnCoriers.get(0).getPhone());
+        assertEquals("First courier other_name", "United States Postal Service", this.returnCoriers.get(0).getOther_name());
+        assertEquals("First courier web_url", "https://www.usps.com", this.returnCoriers.get(0).getWeb_url());
+//        assertEquals("It should return total couriers", 190, this.returnCoriers.size());
+//        //check first courier
+//        assertEquals("First courier slug", "india-post-int", this.returnCoriers.get(0).getSlug());
+//        assertEquals("First courier name", "India Post International", this.returnCoriers.get(0).getName());
+//        assertEquals("First courier phone", "+91 1800 11 2011", this.returnCoriers.get(0).getPhone());
+//        assertEquals("First courier other_name", "भारतीय डाक, Speed Post & eMO, EMS, IPS Web", this.returnCoriers.get(0).getOther_name());
+//        assertEquals("First courier web_url", "http://www.indiapost.gov.in/", this.returnCoriers.get(0).getWeb_url());
+    }
+
+    public void testGetAllCouriers() throws Throwable {
+        // create CountDownLatch for which the test can wait.
+        this.addToCount(1);
+        // Execute the async task on the UI thread! THIS IS KEY!
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                //create an AsyncTask and execute it (we add the latch countDown).
+                //calll to getCouriers
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getAllCouriers, listener) {
                     protected void onPostExecute(ConnectionAPI connection) {
                         super.onPostExecute(connection);
                         LaunchActivityTest.this.latch.countDown();
@@ -227,7 +267,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         assertTrue("It should  have slug equals", this.returnCoriers.get(0).getSlug().equals("fedex")
                 || this.returnCoriers.get(1).getSlug().equals("fedex"));
 
-        //if the trackingNumber doesn't match any courier defined, should give an error.
+        //if the trackingNumber doesn't match any courier defined, should return 0.
         this.addToCount(1);
         runTestOnUiThread(new Runnable() {
             @Override
@@ -246,9 +286,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
         assertEquals("latch should be 0", 0, this.latch.getCount());
-        assertEquals("It should return a exception if the tracking number doesn't matching any courier you have defined"
-                , "Invalid JSON data. Cannot detect courier. Activate courier at https://www.aftership.com/settings/courier.", this.exception.getMessage());
-
+        assertEquals("It should return 0 couriers", 0, this.returnCoriers.size());
     }
 
     public void testPostTracking() throws Throwable {
@@ -348,7 +386,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         assertTrue("this is not 0", await);
         assertEquals("latch should be 0", 0, this.latch.getCount());
         assertEquals("It should return a exception if the tracking number doesn't matching any courier you have defined"
-                , "Invalid JSON data. Cannot detect courier. Activate courier at https://www.aftership.com/settings/courier.", this.exception.getMessage());
+                , "InvalidContent. Cannot detect courier. Activate courier at https://www.aftership.com/settings/courier.  tracking = {\"tracking_number\":\"ASDQ\",\"title\":\"asdq\"}", this.exception.getMessage());
 
     }
 
@@ -389,8 +427,9 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         });
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
+        Log.d(this.exception.getMessage(),"");
         assertEquals("It should return a exception if the slug is not informed properly"
-                , "ResourceNotFound. Tracking does not exist.", this.exception.getMessage());
+                , "ResourceNotFound. Tracking does not exist.  tracking = {\"tracking_number\":\"596454081704\",\"slug\":\"798865638020\"}", this.exception.getMessage());
         this.exception = null;
 
         //if the trackingNumber is bad informed
@@ -410,7 +449,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
         assertEquals("It should return a exception if the slug is not informed properly"
-                , "ResourceNotFound. Tracking does not exist.", this.exception.getMessage());
+                , "ResourceNotFound. Tracking does not exist.  tracking = {\"tracking_number\":\"ADFA\",\"slug\":\"fedex\"}", this.exception.getMessage());
         this.exception = null;
     }
 
@@ -534,7 +573,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         });
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
-        assertEquals("Should be 1 trackings", 1, this.returnTrackings.size());
+        assertEquals("Should be 3 trackings", 2, this.returnTrackings.size());
         this.returnTrackings = null;
 
         this.addToCount(1);
@@ -544,8 +583,8 @@ public class LaunchActivityTest extends InstrumentationTestCase {
             public void run() {
                 //create an AsyncTask and execute it (we add the latch countDown).
                 ParametersTracking param4 = new ParametersTracking();
-               // param4.setLimit(55);
-                param4.addTag(StatusTag.Expired);
+                param4.setLimit(50);
+                param4.addTag(StatusTag.InTransit);
                 new ConnectionAPI(API_KEY, ConnectionAPIMethods.getTrackingsNext, listener, param4) {
                     protected void onPostExecute(ConnectionAPI connection) {
                         super.onPostExecute(connection);
@@ -558,8 +597,8 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
         assertNull(this.exception);
-        //because should be 103 in total, and we are taking the next page
-        assertEquals("Should be 3 trackings",3, this.returnTrackings.size());
+        //because should be 83 in total, and we are making the page limit as 50
+        assertEquals("Should be 32 trackings",4 , this.returnTrackings.size());
 
     }
 
@@ -605,8 +644,10 @@ public class LaunchActivityTest extends InstrumentationTestCase {
 
          await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
-        assertEquals("It should return a exception if the slug is not informed properly",
-                "ResourceNotFound. The requested resource does not exist.", this.exception.getMessage());
+        assertEquals("It should return a exception if the slug is not informed properly"
+                , "ResourceNotFound. The requested resource does not exist.  resource = /v4/trackings//RC328021065CN",
+                this.exception.getMessage());
+
 
         this.addToCount(1);
         runTestOnUiThread(new Runnable() {
@@ -625,13 +666,13 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
         assertEquals("It should return a exception if the slug is not informed properly"
-                , "ResourceNotFound. Tracking does not exist.", this.exception.getMessage());
+                , "ResourceNotFound. Tracking does not exist.  tracking = {\"tracking_number\":\"ADF\",\"slug\":\"fedex\"}", this.exception.getMessage());
 
     }
 
 
     public void testGetTrackingByNumber2()throws Throwable {
-        this.exception=null;
+
         this.addToCount(1);
         //delete the tracking we are going to post (in case it exist)
         runTestOnUiThread(new Runnable() {
@@ -659,7 +700,6 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         assertEquals("Should be equals slug", null, tracking3.getSlug());
         assertEquals("Should be equals checkpoint", null, tracking3.getCheckpoints());
     }
-
 
     public void testPutTracking()throws Throwable{
 
@@ -704,8 +744,8 @@ public class LaunchActivityTest extends InstrumentationTestCase {
 
          await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
-            assertEquals("It should return a exception if the tracking number doesn't matching any courier you have defined"
-                    , "ResourceNotFound. Tracking does not exist.", this.exception.getMessage());
+        assertEquals("It should return a exception if the tracking number doesn't matching any courier you have defined"
+                , "ResourceNotFound. Tracking does not exist.  tracking = {\"tracking_number\":\"ASDQ\",\"slug\":\"null\"}", this.exception.getMessage());
 
     }
 
@@ -746,7 +786,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         boolean await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
         assertEquals("Should be equals message",
-                "InvalidArgument. Reactivate is not allowed. You can only reactivate an expired tracking.",
+            "InvalidArgument. Reactivate is not allowed. You can only reactivate an expired tracking.  tracking = {\"tracking_number\":\"RT224265042HK\",\"slug\":\"hong-kong-post\"}",
                 this.exception.getMessage());
 
 //        //slug is bad informed
@@ -767,7 +807,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
         assertEquals("It should return a exception if the slug is not informed properly"
-                    , "ResourceNotFound. The requested resource does not exist.", this.exception.getMessage());
+                , "ResourceNotFound. The requested resource does not exist.  resource = /v4/trackings//RT224265042HK/reactivate", this.exception.getMessage());
 
 //        //if the trackingNumber is bad informed
         this.addToCount(1);
@@ -786,8 +826,9 @@ public class LaunchActivityTest extends InstrumentationTestCase {
 
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
-            assertEquals("It should return a exception if the slug is not informed properly"
-                    , "ResourceNotFound. Tracking does not exist.", this.exception.getMessage());
+        assertEquals("It should return a exception if the slug is not informed properly"
+                , "ResourceNotFound. Tracking does not exist.  tracking = {\"tracking_number\":\"ADF\",\"slug\":\"fedex\"}", this.exception.getMessage());
+
 
     }
 
@@ -832,7 +873,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
         assertEquals("It should return a exception if the slug is not informed properly"
-                    , "ResourceNotFound. Tracking does not exist.", this.exception.getMessage());
+                , "ResourceNotFound. Tracking does not exist.  tracking = {\"tracking_number\":\"GM605112270084510370\",\"slug\":\"dhl--mail\"}", this.exception.getMessage());
 
         //if the trackingNumber is bad informed
         this.addToCount(1);
@@ -852,7 +893,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
         assertEquals("It should return a exception if the slug is not informed properly"
-                    , "ResourceNotFound. Tracking does not exist.", this.exception.getMessage());
+                , "ResourceNotFound. Tracking does not exist.  tracking = {\"tracking_number\":\"ADS\",\"slug\":\"dhl--mail\"}", this.exception.getMessage());
 
     }
 
@@ -908,4 +949,5 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         assertEquals("Should be equals message", "Delivered", newCheckpoint2.getMessage());
         assertEquals("Should be equals","2014-06-17T04:19:38+00:00",newCheckpoint2.getCreatedAt());
     }
+
 }

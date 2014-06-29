@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-
 /**
  * Keep the information for get trackings from the server, and interact with the results
  * Created by User on 13/6/14.
