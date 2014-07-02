@@ -3,6 +3,9 @@ package Classes;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Define a Courier
  * Created by User on 10/6/14.
@@ -19,6 +22,8 @@ public class Courier {
     private String other_name;
     /** Website link of courier */
     private String web_url;
+    /** Require fields for this courier */
+    private List<String> requireFields;
 
     /** Default constructor with all the fields of the class */
     public Courier(String web_url, String slug, String name, String phone, String other_name) {
@@ -94,6 +99,29 @@ public class Courier {
 
     public void setWeb_url(String web_url) {
         this.web_url = web_url;
+    }
+
+    public List<String> getRequireFields() {
+        return this.requireFields;
+    }
+
+    public void addRequierField(String requierField) {
+
+        if (this.requireFields == null) {
+            this.requireFields = new ArrayList<String>();
+            this.requireFields.add(requierField);
+        } else
+            this.requireFields.add(requierField);
+    }
+
+    public void deleteRequierField(String requierField) {
+        if (this.requireFields != null) {
+            this.requireFields.remove(requierField);
+        }
+    }
+
+    public void deleteRequierFields() {
+        this.requireFields = null;
     }
 
 }

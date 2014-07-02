@@ -26,7 +26,7 @@ import android.os.AsyncTask;
  */
 public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
 
-    private static String URL_SERVER = "http://54.88.19.48:3003/";
+    private static String URL_SERVER = "https://api.aftership.com/";
     private static String VERSION_API = "v4";
 
     private String keyAPI;
@@ -851,20 +851,20 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
             {
                 sb.append(line + '\n');
             }
-            JSONObject response = new JSONObject(sb.toString());
-            JSONObject meta = response.has("meta")?response.getJSONObject("meta"):new JSONObject();
-            JSONObject data = response.has("data")?response.getJSONObject("data"):new JSONObject();
-            message = meta.has("message")?meta.getString("message"):"";
-            type = meta.has("type")?meta.getString("type"):"";
-            StringBuilder newInformation = new StringBuilder();
-            Iterator<?> keys = data.keys();
-            String key;
-            while( keys.hasNext() ) {
-                key = (String) keys.next();
-                newInformation.append(" " + key + " = " + data.getString(key));
-            }
+//            JSONObject response = new JSONObject(sb.toString());
+//            JSONObject meta = response.has("meta")?response.getJSONObject("meta"):new JSONObject();
+//            JSONObject data = response.has("data")?response.getJSONObject("data"):new JSONObject();
+//            message = meta.has("message")?meta.getString("message"):"";
+//            type = meta.has("type")?meta.getString("type"):"";
+//            StringBuilder newInformation = new StringBuilder();
+//            Iterator<?> keys = data.keys();
+//            String key;
+//            while( keys.hasNext() ) {
+//                key = (String) keys.next();
+//                newInformation.append(" " + key + " = " + data.getString(key));
+//            }
 
-            throw new AftershipAPIException((type+". "+message+" "+newInformation.toString()).trim());
+            throw new AftershipAPIException((type+". "+message+" "+sb.toString()).trim());
         }
 
     }
