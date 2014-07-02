@@ -1,5 +1,6 @@
 package Classes;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -47,7 +48,13 @@ public class Courier {
         this.name = jsonCourier.has("name")?jsonCourier.getString("name"):"";
         this.phone = jsonCourier.has("phone")?jsonCourier.getString("phone"):"";
         this.other_name = jsonCourier.has("other_name")?jsonCourier.getString("other_name"):"";
-
+        JSONArray requireFieldsArray =jsonCourier.isNull("require_fields")?null:jsonCourier.getJSONArray("require_fields");
+        if(requireFieldsArray !=null && requireFieldsArray.length()!=0){
+            this.requireFields = new ArrayList<String>();
+            for (int i=0;i<requireFieldsArray.length();i++){
+                this.requireFields.add(requireFieldsArray.get(i).toString());
+            }
+        }
     }
 
     @Override
