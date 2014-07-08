@@ -7,6 +7,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
 import Enums.ConnectionAPIMethods;
+import Enums.FieldCheckpoint;
+import Enums.FieldTracking;
 import android.app.ProgressDialog;
 import android.content.Context;
 import org.json.*;
@@ -132,28 +134,6 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
     }
 
     /**
-     * Constructor for getTrackingByNumber, deleteTracking, reactivate and getLastCheckpoint
-     *
-     * @param keyAPI KEY API link to the user account
-     * @param method Which method as an acction (getTracking, deleteTracking...)
-     * @param callback Object where execute the callback
-     * @param trackingNumber String with the tracking number
-     * @param slug  String with the tracking of the Tracking
-     **/
-    public ConnectionAPI(String keyAPI,ConnectionAPIMethods method,AsyncTaskCompleteListener<ConnectionAPI> callback,
-                         String trackingNumber,String slug){
-        this(method,callback,keyAPI);
-        if(method!=ConnectionAPIMethods.getTrackingByNumber && method!=ConnectionAPIMethods.deleteTracking &&
-                method!=ConnectionAPIMethods.reactivate && method!=ConnectionAPIMethods.getLastCheckpoint)
-            this.exception =  new AftershipAPIException("The constructor only can be called with" +
-                    "ConnectionAPIMethods.getTrackingByNumber,ConnectionAPIMethods.deleteTracking," +
-                    "ConnectionAPIMethods.reactivate, ConnectionAPIMethods.getLastCheckpoint");
-        this.trackingNumber = trackingNumber;
-        this.slug = slug;
-
-    }
-
-    /**
      * Constructor for getTrackings and getTrackingsNext
      *
      * @param keyAPI KEY API link to the user account
@@ -188,7 +168,7 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
     }
 
     /**
-     * Constructor for postTracking and putTracking
+     * Constructor for postTracking and putTracking, getTrackingByNumber, deleteTracking, reactivate and getLastCheckpoint
      *
      * @param keyAPI KEY API link to the user account
      * @param method Which method as an acction (getTracking, deleteTracking...)
@@ -198,9 +178,13 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
     public ConnectionAPI(String keyAPI,ConnectionAPIMethods method,AsyncTaskCompleteListener<ConnectionAPI> callback,
                          Tracking tracking){
         this(method,callback,keyAPI);
-        if(method!=ConnectionAPIMethods.postTracking && method!=ConnectionAPIMethods.putTracking)
+        if(method!=ConnectionAPIMethods.postTracking && method!=ConnectionAPIMethods.putTracking &&
+                method!=ConnectionAPIMethods.getTrackingByNumber && method!=ConnectionAPIMethods.deleteTracking &&
+                method!=ConnectionAPIMethods.reactivate && method!=ConnectionAPIMethods.getLastCheckpoint)
             this.exception =  new AftershipAPIException("The constructor only can be called with," +
-                    " ConnectionAPIMethods.postTracking or ConnectionAPIMethods.putTracking");
+                    "ConnectionAPIMethods.postTracking, ConnectionAPIMethods.putTracking, " +
+                    "ConnectionAPIMethods.getTrackingByNumber,ConnectionAPIMethods.deleteTracking, " +
+                    "ConnectionAPIMethods.reactivate, ConnectionAPIMethods.getLastCheckpoint");
         this.tracking = tracking;
     }
 
@@ -210,19 +194,17 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
      * @param keyAPI KEY API link to the user account
      * @param method Which method as an acction (getTracking, deleteTracking...)
      * @param callback Object where execute the callback
-     * @param trackingNumber Tracking to post or put
-     * @param slug Slug of the tracking
+     * @param tracking Tracking to get last checkpoint or get
      * @param fields List of the fields we want
      * @param lang Language
      **/
     public ConnectionAPI(String keyAPI,ConnectionAPIMethods method,AsyncTaskCompleteListener<ConnectionAPI> callback,
-                         String trackingNumber,String slug, List<?> fields, String lang){
+                         Tracking tracking, List<?> fields, String lang){
         this(method,callback,keyAPI);
         if(method!=ConnectionAPIMethods.getLastCheckpoint && method!=ConnectionAPIMethods.getTrackingByNumber)
             this.exception =  new AftershipAPIException("The constructor only can be called with" +
                     " ConnectionAPIMethods.getLastCheckpoint or method!=ConnectionAPIMethods.getTrackingByNumber");
-        this.trackingNumber = trackingNumber;
-        this.slug = slug;
+        this.tracking = tracking;
         this.fields = fields;
         this.lang = lang;
     }
@@ -248,21 +230,19 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
                 switch (this.method.getNumberMethod()) {
                     case 0://getLastCheckpoint
                         if (this.fields == null && this.lang == null)
-                            this.checkpointReturn = this.getLastCheckpoint(this.trackingNumber, this.slug);
+                            this.checkpointReturn = this.getLastCheckpoint(this.tracking);
                         else
-                            this.checkpointReturn = this.getLastCheckpoint(this.trackingNumber,
-                                    this.slug, this.fields, this.slug);
+                            this.checkpointReturn = this.getLastCheckpoint(this.tracking, this.fields, this.slug);
                         break;
                     case 1: //reactivate
-                        this.confirmationReturn = this.reactivate(this.trackingNumber, this.slug);
+                        this.confirmationReturn = this.reactivate(this.tracking);
                         break;
                     case 2://getTrackingByNumber
                         if (this.fields == null && this.lang == null) {
-                            this.trackingReturn = this.getTrackingByNumber(this.trackingNumber, this.slug);
+                            this.trackingReturn = this.getTrackingByNumber(this.tracking);
                         }
                         else {
-                            this.trackingReturn = this.getTrackingByNumber(
-                                    this.trackingNumber, this.slug, this.fields, this.lang);
+                            this.trackingReturn = this.getTrackingByNumber(this.tracking, this.fields, this.lang);
                         }
                         break;
                     case 3://getTracking
@@ -274,7 +254,7 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
                         }
                         break;
                     case 4://deleteTracking
-                        this.confirmationReturn = this.deleteTracking(this.trackingNumber, this.slug);
+                        this.confirmationReturn = this.deleteTracking(this.tracking);
                         break;
                     case 5://postTracking
                         this.trackingReturn = this.postTracking(this.tracking);
@@ -359,8 +339,7 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
     /**
      * Return the tracking information of the last checkpoint of a single tracking
      *
-     * @param trackingNumber A String with the trackingNumber to get the last checkpoint, mandatory param
-     * @param slug A String with the slug of the courier to get the last checkpoint, mandatory param
+     * @param tracking A Tracking to get the last checkpoint of, it should have tracking number and slug at least.
      * @return   The last Checkpoint object
      * @throws Classes.AftershipAPIException  If the request response an error
      *           The tracking is not defined in your account
@@ -368,10 +347,14 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
      * @throws   java.text.ParseException    If the response can not be parse to JSONObject
      * @see Checkpoint
      **/
-    public Checkpoint getLastCheckpoint(String trackingNumber,String slug)
+    public Checkpoint getLastCheckpoint(Tracking tracking)
             throws AftershipAPIException,IOException,ParseException,JSONException{
 
-        JSONObject response = this.request("GET","/last_checkpoint/"+slug+"/"+trackingNumber,null);
+        String paramRequiredFields = tracking.getQueryRequiredFields().replaceFirst("&", "?");
+
+        JSONObject response = this.request("GET","/last_checkpoint/"+tracking.getSlug()+
+                "/"+tracking.getTrackingNumber()+paramRequiredFields,null);
+
         JSONObject checkpointJSON = response.getJSONObject("data").getJSONObject("checkpoint");
         Checkpoint checkpoint = null;
         if(checkpointJSON.length()!=0) {
@@ -384,9 +367,8 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
     /**
      * Return the tracking information of the last checkpoint of a single tracking
      *
-     * @param trackingNumber A String with the trackingNumber to get the last checkpoint, mandatory param
-     * @param slug A String with the slug of the courier to get the last checkpoint, mandatory param
-     * @param fields         A list of fields wanted to be in the response
+     * @param tracking A Tracking to get the last checkpoint of, it should have tracking number and slug at least.
+     * @param fields         A list of fields of checkpoint wanted to be in the response
      * @param lang           A String with the language desired. Support Chinese to English translation
      *                       for china-ems and china-post only
      * @return   The last Checkpoint object
@@ -396,16 +378,20 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
      * @throws   java.text.ParseException    If the response can not be parse to JSONObject
      * @see Checkpoint
      **/
-    public Checkpoint getLastCheckpoint(String trackingNumber,String slug,List<?> fields, String lang)
-            throws AftershipAPIException,IOException,JSONException,ParseException,JSONException{
+    public Checkpoint getLastCheckpoint(Tracking tracking,List<?> fields, String lang)
+            throws AftershipAPIException,IOException,ParseException,JSONException{
 
         String params;
         QueryString qs = new QueryString();
+        String paramRequiredFields = tracking.getQueryRequiredFields();
+
         if (fields!=null) qs.add("fields", fields);
         if (lang!=null && !lang.equals("")) qs.add("lang",lang);
         params = qs.toString().replaceFirst("&","?");
 
-        JSONObject response = this.request("GET","/last_checkpoint/"+slug+"/"+trackingNumber+params,null);
+        JSONObject response = this.request("GET","/last_checkpoint/"+tracking.getSlug()+
+                "/"+tracking.getTrackingNumber()+params+paramRequiredFields,null);
+
         JSONObject checkpointJSON = response.getJSONObject("data").getJSONObject("checkpoint");
         Checkpoint checkpoint = null;
         if(checkpointJSON.length()!=0) {
@@ -414,11 +400,11 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
 
         return checkpoint;
     }
+
     /**
      * Reactivate an expired tracking from your account
      *
-     * @param trackingNumber A String with the trackingNumber to reactivate, mandatory param
-     * @param slug A String with the slug of the courier to reactivate, mandatory param
+     * @param tracking A Tracking to reactivate, it should have tracking number and slug at least.
      * @return   A JSONObject with the response. It will contain the status code of the operation, trackingNumber,
      *           slug and active (to true)
      * @throws Classes.AftershipAPIException  If the request response an error
@@ -426,10 +412,13 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
      * @throws   java.io.IOException If there is a problem with the connection
      * @throws   java.text.ParseException    If the response can not be parse to JSONObject
      **/
-    public boolean reactivate(String trackingNumber, String slug)
+    public boolean reactivate(Tracking tracking)
             throws AftershipAPIException,IOException,ParseException,JSONException{
 
-        JSONObject response = this.request("POST","/trackings/"+slug+"/"+trackingNumber+"/reactivate",null);
+        String paramRequiredFields = tracking.getQueryRequiredFields().replaceFirst("&","?");
+
+        JSONObject response = this.request("POST","/trackings/"+tracking.getSlug()+
+                "/"+tracking.getTrackingNumber()+"/reactivate"+paramRequiredFields,null);
 
         if (response.getJSONObject("meta").getInt("code")==200)
             return true;
@@ -441,8 +430,7 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
     /**
      * Get a specific tracking from your account
      *
-     * @param trackingNumber A String with the trackingNumber to get, mandatory param
-     * @param slug A String with the slug of the courier to get, mandatory param
+     * @param trackingGet A Tracking to get, it should have tracking number and slug at least.
      * @return  A Tracking object with the response
      * @throws Classes.AftershipAPIException  If the request response an error
      *          The tracking is not defined in your account
@@ -450,10 +438,13 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
      * @throws  java.text.ParseException    If the response can not be parse to JSONObject
      * @see     Tracking
      **/
-    public Tracking getTrackingByNumber(String trackingNumber,String slug)
+    public Tracking getTrackingByNumber(Tracking trackingGet)
             throws AftershipAPIException,IOException,ParseException,JSONException{
 
-        JSONObject response = this.request("GET","/trackings/"+slug+"/"+trackingNumber,null);
+        String paramRequiredFields = trackingGet.getQueryRequiredFields().replaceFirst("&","?");
+
+        JSONObject response = this.request("GET","/trackings/"+trackingGet.getSlug()+
+                "/"+trackingGet.getTrackingNumber()+paramRequiredFields,null);
         JSONObject trackingJSON = response.getJSONObject("data").getJSONObject("tracking");
         Tracking tracking = null;
         if(trackingJSON.length()!=0) {
@@ -466,8 +457,7 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
     /**
      * Get a specific tracking from your account
      *
-     * @param trackingNumber A String with the trackingNumber to get, mandatory param
-     * @param slug           A String with the slug of the courier to get, mandatory param
+     * @param trackingGet A Tracking to get, it should have tracking number and slug at least.
      * @param fields         A list of fields wanted to be in the response
      * @param lang           A String with the language desired. Support Chinese to English translation
      *                       for china-ems and china-post only
@@ -479,16 +469,19 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
      * @throws  java.text.ParseException    If the response can not be parse to JSONObject
      * @see     Tracking
      **/
-    public Tracking getTrackingByNumber(String trackingNumber,String slug,List<?> fields,String lang)
+    public Tracking getTrackingByNumber(Tracking trackingGet,List<?> fields,String lang)
             throws AftershipAPIException,IOException,ParseException,JSONException{
+
 
         String params;
         QueryString qs = new QueryString();
         if (fields!=null) qs.add("fields", fields);
         if (lang!=null && !lang.equals("")) qs.add("lang",lang);
         params = qs.toString().replaceFirst("&","?");
+        String paramRequiredFields = trackingGet.getQueryRequiredFields();
 
-        JSONObject response = this.request("GET","/trackings/"+slug+"/"+trackingNumber+params,null);
+        JSONObject response = this.request("GET","/trackings/"+trackingGet.getSlug()+
+                "/"+trackingGet.getTrackingNumber()+params+paramRequiredFields,null);
         JSONObject trackingJSON = response.getJSONObject("data").getJSONObject("tracking");
         Tracking tracking = null;
         if(trackingJSON.length()!=0) {
@@ -576,17 +569,17 @@ public class ConnectionAPI extends AsyncTask<Void,Void,ConnectionAPI> {
     /**
      * Delete a tracking from your account
      *
-     * @param trackingNumber A String with the trackingNumber to delete, mandatory param
-     * @param slug A String with the slug of the courier to delete, mandatory param
+     * @param tracking A Tracking to delete
      * @return   A boolean, true if delete correctly, and false otherwise
      * @throws Classes.AftershipAPIException  If the request response an error
      *           The tracking is not defined in your account
      * @throws   java.io.IOException If there is a problem with the connection
      * @throws   java.text.ParseException    If the response can not be parse to JSONObject
      **/
-    public boolean deleteTracking(String trackingNumber,String slug)throws AftershipAPIException,IOException,ParseException,JSONException{
-        JSONObject response = this.request("DELETE","/trackings/"+slug+"/"+trackingNumber,null);
-
+    public boolean deleteTracking(Tracking tracking)
+            throws AftershipAPIException,IOException,ParseException,JSONException{
+        JSONObject response = this.request("DELETE","/trackings/"+tracking.getSlug()+
+                "/"+tracking.getTrackingNumber(),null);
         if (response.getJSONObject("meta").getInt("code")==200)
             return true;
         else

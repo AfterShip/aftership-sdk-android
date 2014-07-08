@@ -115,7 +115,9 @@ public class LaunchActivityTest extends InstrumentationTestCase {
                     @Override
                     public void run() {
                         //create an AsyncTask and execute it (we add the latch countDown).
-                        new ConnectionAPI(API_KEY, ConnectionAPIMethods.deleteTracking, listener, "05167019264110", "dpd") {
+                        Tracking tracking = new Tracking("05167019264110");
+                        tracking.setSlug("dpd");
+                        new ConnectionAPI(API_KEY, ConnectionAPIMethods.deleteTracking, listener,tracking) {
                             protected void onPostExecute(ConnectionAPI connection) {
                                 super.onPostExecute(connection);
                                 LaunchActivityTest.this.latch.countDown();
@@ -127,7 +129,9 @@ public class LaunchActivityTest extends InstrumentationTestCase {
                     @Override
                     public void run() {
                         //create an AsyncTask and execute it (we add the latch countDown).
-                        new ConnectionAPI(API_KEY, ConnectionAPIMethods.deleteTracking, listener, trackingNumberToDetect, "dpd") {
+                        Tracking tracking = new Tracking(trackingNumberToDetect);
+                        tracking.setSlug("dpd");
+                        new ConnectionAPI(API_KEY, ConnectionAPIMethods.deleteTracking, listener, tracking) {
                             protected void onPostExecute(ConnectionAPI connection) {
                                 super.onPostExecute(connection);
                                 LaunchActivityTest.this.latch.countDown();
@@ -194,7 +198,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         boolean await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
         //total Couriers returned
-        assertEquals("It should return total couriers", 6, this.returnCoriers.size());
+        assertEquals("It should return total couriers", 7, this.returnCoriers.size());
         //check first courier
         assertEquals("First courier slug", "usps", this.returnCoriers.get(0).getSlug());
         assertEquals("First courier name", "USPS", this.returnCoriers.get(0).getName());
@@ -385,7 +389,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue("this is not 0", await);
         assertEquals("latch should be 0", 0, this.latch.getCount());
-        assertTrue(this.exception.getMessage().contains("400"));
+        assertTrue(this.exception.getMessage().contains("4012"));
         assertTrue(this.exception.getMessage().contains("Cannot detect courier. Activate courier at https://www.aftership.com/settings/courier."));
 //        assertEquals("It should return a exception if the tracking number doesn't matching any courier you have defined"
 //                , "{\"meta\":{\"code\":400,\"message\":\"Cannot detect courier. Activate courier at https://www.aftership.com/settings/courier.\",\"type\":\"InvalidContent\"},\"data\":{\"tracking\":{\"tracking_number\":\"ASDQ\",\"title\":\"asdq\"}}}", this.exception.getMessage());
@@ -399,7 +403,9 @@ public class LaunchActivityTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 //create an AsyncTask and execute it (we add the latch countDown).
-                new ConnectionAPI(API_KEY, ConnectionAPIMethods.deleteTracking, listener, trackingNumberDelete, slugDelete) {
+                Tracking tracking = new Tracking(trackingNumberDelete);
+                tracking.setSlug(slugDelete);
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.deleteTracking, listener, tracking) {
                     protected void onPostExecute(ConnectionAPI connection) {
                         super.onPostExecute(connection);
                         LaunchActivityTest.this.latch.countDown();
@@ -419,7 +425,8 @@ public class LaunchActivityTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 //create an AsyncTask and execute it (we add the latch countDown).
-                new ConnectionAPI(API_KEY, ConnectionAPIMethods.deleteTracking, listener, trackingNumberDelete2, "") {
+                Tracking tracking = new Tracking(trackingNumberDelete2);
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.deleteTracking, listener, tracking) {
                     protected void onPostExecute(ConnectionAPI connection) {
                         super.onPostExecute(connection);
                         LaunchActivityTest.this.latch.countDown();
@@ -431,8 +438,8 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         assertTrue(await);
         Log.d(this.exception.getMessage(),"");
         System.out.println(this.exception.getMessage());
-        assertTrue(this.exception.getMessage().contains("404"));
-        assertTrue(this.exception.getMessage().contains("The requested resource does not exist."));
+        assertTrue(this.exception.getMessage().contains("4004"));
+        assertTrue(this.exception.getMessage().contains("Tracking does not exist."));
 //        assertEquals("It should return a exception if the slug is not informed properly"
 //                , " {\"meta\":{\"code\":404,\"message\":\"The requested resource does not exist.\",\"type\":\"ResourceNotFound\"},\"data\":{\"resource\":\"/v4/trackings//798865638020\"}}", this.exception.getMessage());
 
@@ -444,7 +451,9 @@ public class LaunchActivityTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 //create an AsyncTask and execute it (we add the latch countDown).
-                new ConnectionAPI(API_KEY, ConnectionAPIMethods.deleteTracking, listener, "adfa", "fedex") {
+                Tracking tracking = new Tracking( "adfa");
+                tracking.setSlug("fedex");
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.deleteTracking, listener, tracking) {
                     protected void onPostExecute(ConnectionAPI connection) {
                         super.onPostExecute(connection);
                         LaunchActivityTest.this.latch.countDown();
@@ -454,7 +463,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         });
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
-        assertTrue(this.exception.getMessage().contains("404"));
+        assertTrue(this.exception.getMessage().contains("4004"));
         assertTrue(this.exception.getMessage().contains("Tracking does not exist."));
 //        assertEquals("It should return a exception if the slug is not informed properly"
 //                , "{\"meta\":{\"code\":404,\"message\":\"Tracking does not exist.\",\"type\":\"ResourceNotFound\"},\"data\":{\"tracking\":{\"slug\":\"fedex\",\"tracking_number\":\"ADFA\"}}}", this.exception.getMessage());
@@ -570,7 +579,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
             public void run() {
                 //create an AsyncTask and execute it (we add the latch countDown).
                 ParametersTracking param2 = new ParametersTracking();
-                param2.addTag(StatusTag.OutForDelivery);
+                param2.addTag(StatusTag.AttemptFail);
                 new ConnectionAPI(API_KEY, ConnectionAPIMethods.getTrackings, listener, param2) {
                     protected void onPostExecute(ConnectionAPI connection) {
                         super.onPostExecute(connection);
@@ -581,7 +590,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         });
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
-        assertEquals("Should be 3 trackings", 1, this.returnTrackings.size());
+        assertEquals("Should be 1 trackings", 1, this.returnTrackings.size());
         this.returnTrackings = null;
 
         this.addToCount(1);
@@ -606,7 +615,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         assertTrue(await);
         assertNull(this.exception);
         //because should be 83 in total, and we are making the page limit as 50
-        assertEquals("Should be 33 trackings",13 , this.returnTrackings.size());
+        assertEquals("Should be 33 trackings",10 , this.returnTrackings.size());
 
     }
 
@@ -618,7 +627,9 @@ public class LaunchActivityTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 //create an AsyncTask and execute it (we add the latch countDown).
-                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getTrackingByNumber, listener, "RC328021065CN", "canada-post") {
+                Tracking tracking = new Tracking("RC328021065CN");
+                tracking.setSlug("canada-post");
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getTrackingByNumber, listener, tracking) {
                     protected void onPostExecute(ConnectionAPI connection) {
                         super.onPostExecute(connection);
                         LaunchActivityTest.this.latch.countDown();
@@ -641,7 +652,8 @@ public class LaunchActivityTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 //create an AsyncTask and execute it (we add the latch countDown).
-                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getTrackingByNumber, listener, "RC328021065CN", "") {
+                Tracking tracking = new Tracking("RC328021065CN");
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getTrackingByNumber, listener, tracking) {
                     protected void onPostExecute(ConnectionAPI connection) {
                         super.onPostExecute(connection);
                         LaunchActivityTest.this.latch.countDown();
@@ -653,8 +665,8 @@ public class LaunchActivityTest extends InstrumentationTestCase {
          await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
         System.out.println(this.exception.getMessage());
-        assertTrue(this.exception.getMessage().contains("404"));
-        assertTrue(this.exception.getMessage().contains("The requested resource does not exist."));
+        assertTrue(this.exception.getMessage().contains("4004"));
+        assertTrue(this.exception.getMessage().contains("Tracking does not exist."));
 //        assertEquals("It should return a exception if the slug is not informed properly"
 //                , "{\"meta\":{\"code\":404,\"message\":\"The requested resource does not exist.\",\"type\":\"ResourceNotFound\"},\"data\":{\"resource\":\"/v4/trackings//RC328021065CN\"}}",
 
@@ -666,7 +678,9 @@ public class LaunchActivityTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 //create an AsyncTask and execute it (we add the latch countDown).
-                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getTrackingByNumber, listener, "adf", "fedex") {
+                Tracking tracking = new Tracking("adf");
+                tracking.setSlug("fedex");
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getTrackingByNumber, listener, tracking) {
                     protected void onPostExecute(ConnectionAPI connection) {
                         super.onPostExecute(connection);
                         LaunchActivityTest.this.latch.countDown();
@@ -677,7 +691,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
 
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
-        assertTrue(this.exception.getMessage().contains("404"));
+        assertTrue(this.exception.getMessage().contains("4004"));
         assertTrue(this.exception.getMessage().contains("Tracking does not exist."));
 //        assertEquals("It should return a exception if the slug is not informed properly"
 //                , "ResourceNotFound. Tracking does not exist.  tracking = {\"tracking_number\":\"ADF\",\"slug\":\"fedex\"}", this.exception.getMessage());
@@ -695,7 +709,9 @@ public class LaunchActivityTest extends InstrumentationTestCase {
                 //create an AsyncTask and execute it (we add the latch countDown).
                 List<FieldTracking> fields = new ArrayList<FieldTracking>();
                 fields.add(FieldTracking.tracking_number);
-                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getTrackingByNumber, listener, "RC328021065CN", "canada-post",fields,null) {
+                Tracking trackingGet1 = new Tracking("RC328021065CN");
+                trackingGet1.setSlug("canada-post");
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getTrackingByNumber, listener, trackingGet1,fields,null) {
                     protected void onPostExecute(ConnectionAPI connection) {
                         super.onPostExecute(connection);
                         LaunchActivityTest.this.latch.countDown();
@@ -759,7 +775,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
          await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
         System.out.println(this.exception.getMessage());
-        assertTrue(this.exception.getMessage().contains("404"));
+        assertTrue(this.exception.getMessage().contains("4004"));
         assertTrue(this.exception.getMessage().contains("Tracking does not exist."));
 //        assertEquals("It should return a exception if the tracking number doesn't matching any courier you have defined"
 //                , "{\"meta\":{\"code\":404,\"message\":\"Tracking does not exist.\",\"type\":\"ResourceNotFound\"},\"data\":{\"tracking\":{\"slug\":\"null\",\"tracking_number\":\"ASDQ\"}}}", this.exception.getMessage());
@@ -791,7 +807,9 @@ public class LaunchActivityTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 //create an AsyncTask and execute it (we add the latch countDown).
-                new ConnectionAPI(API_KEY, ConnectionAPIMethods.reactivate, listener,"RT224265042HK","hong-kong-post") {
+                Tracking tracking = new Tracking("RT224265042HK");
+                tracking.setSlug("hong-kong-post");
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.reactivate, listener,tracking) {
                     protected void onPostExecute(ConnectionAPI connection) {
                         super.onPostExecute(connection);
                         LaunchActivityTest.this.latch.countDown();
@@ -803,7 +821,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         boolean await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
         System.out.println(this.exception.getMessage());
-        assertTrue(this.exception.getMessage().contains("409"));
+        assertTrue(this.exception.getMessage().contains("4013"));
         assertTrue(this.exception.getMessage().contains("Reactivate is not allowed. You can only reactivate an expired tracking."));
 //        assertEquals("Should be equals message",
 //            "{\"meta\":{\"code\":409,\"message\":\"Reactivate is not allowed. You can only reactivate an expired tracking.\",\"type\":\"InvalidArgument\"},\"data\":{\"tracking\":{\"slug\":\"hong-kong-post\",\"tracking_number\":\"RT224265042HK\"}}}",
@@ -815,7 +833,8 @@ public class LaunchActivityTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 //create an AsyncTask and execute it (we add the latch countDown).
-                new ConnectionAPI(API_KEY, ConnectionAPIMethods.reactivate, listener,"RT224265042HK","") {
+                Tracking tracking = new Tracking("RT224265042HK");
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.reactivate, listener,tracking) {
                     protected void onPostExecute(ConnectionAPI connection) {
                         super.onPostExecute(connection);
                         LaunchActivityTest.this.latch.countDown();
@@ -826,8 +845,8 @@ public class LaunchActivityTest extends InstrumentationTestCase {
 
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
-        assertTrue(this.exception.getMessage().contains("404"));
-        assertTrue(this.exception.getMessage().contains("The requested resource does not exist."));
+        assertTrue(this.exception.getMessage().contains("4004"));
+        assertTrue(this.exception.getMessage().contains("Tracking does not exist."));
 //        assertEquals("It should return a exception if the slug is not informed properly"
 //                , "ResourceNotFound. The requested resource does not exist.  resource = /v4/trackings//RT224265042HK/reactivate", this.exception.getMessage());
 
@@ -837,7 +856,9 @@ public class LaunchActivityTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 //create an AsyncTask and execute it (we add the latch countDown).
-                new ConnectionAPI(API_KEY, ConnectionAPIMethods.reactivate, listener,"adf", "fedex") {
+                Tracking tracking = new Tracking("adf");
+                tracking.setSlug("fedex");
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.reactivate, listener,tracking) {
                     protected void onPostExecute(ConnectionAPI connection) {
                         super.onPostExecute(connection);
                         LaunchActivityTest.this.latch.countDown();
@@ -848,7 +869,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
 
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
-        assertTrue(this.exception.getMessage().contains("404"));
+        assertTrue(this.exception.getMessage().contains("4004"));
         assertTrue(this.exception.getMessage().contains("Tracking does not exist."));
 //        assertEquals("It should return a exception if the slug is not informed properly"
 //                , "ResourceNotFound. Tracking does not exist.  tracking = {\"tracking_number\":\"ADF\",\"slug\":\"fedex\"}", this.exception.getMessage());
@@ -863,7 +884,9 @@ public class LaunchActivityTest extends InstrumentationTestCase {
             @Override
             public void run() {
             //create an AsyncTask and execute it (we add the latch countDown).
-            new ConnectionAPI(API_KEY, ConnectionAPIMethods.getLastCheckpoint, listener,"GM605112270084510370", "dhl-global-mail") {
+                Tracking tracking = new Tracking("GM605112270084510370");
+                tracking.setSlug("dhl-global-mail");
+            new ConnectionAPI(API_KEY, ConnectionAPIMethods.getLastCheckpoint, listener,tracking) {
                 protected void onPostExecute(ConnectionAPI connection) {
                     super.onPostExecute(connection);
                     LaunchActivityTest.this.latch.countDown();
@@ -885,7 +908,9 @@ public class LaunchActivityTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 //create an AsyncTask and execute it (we add the latch countDown).
-                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getLastCheckpoint, listener,"GM605112270084510370", "dhl--mail") {
+                Tracking tracking = new Tracking("GM605112270084510370");
+                tracking.setSlug("dhl--mail");
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getLastCheckpoint, listener,tracking) {
                     protected void onPostExecute(ConnectionAPI connection) {
                         super.onPostExecute(connection);
                         LaunchActivityTest.this.latch.countDown();
@@ -897,7 +922,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
         System.out.println(this.exception.getMessage());
-        assertTrue(this.exception.getMessage().contains("404"));
+        assertTrue(this.exception.getMessage().contains("4004"));
         assertTrue(this.exception.getMessage().contains("Tracking does not exist."));
 //        assertEquals("It should return a exception if the slug is not informed properly"
 //                , "{\"meta\":{\"code\":404,\"message\":\"Tracking does not exist.\",\"type\":\"ResourceNotFound\"},\"data\":{\"tracking\":{\"slug\":\"dhl--mail\",\"tracking_number\":\"GM605112270084510370\"}}}", this.exception.getMessage());
@@ -908,7 +933,9 @@ public class LaunchActivityTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 //create an AsyncTask and execute it (we add the latch countDown).
-                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getLastCheckpoint, listener,"ads", "dhl--mail") {
+                Tracking tracking = new Tracking("ads");
+                tracking.setSlug("dhl--mail");
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getLastCheckpoint, listener,tracking) {
                     protected void onPostExecute(ConnectionAPI connection) {
                         super.onPostExecute(connection);
                         LaunchActivityTest.this.latch.countDown();
@@ -919,7 +946,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
 
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
-        assertTrue(this.exception.getMessage().contains("404"));
+        assertTrue(this.exception.getMessage().contains("4004"));
         assertTrue(this.exception.getMessage().contains("Tracking does not exist."));
 //        assertEquals("It should return a exception if the slug is not informed properly"
 //                , "ResourceNotFound. Tracking does not exist.  tracking = {\"tracking_number\":\"ADS\",\"slug\":\"dhl--mail\"}", this.exception.getMessage());
@@ -935,7 +962,9 @@ public class LaunchActivityTest extends InstrumentationTestCase {
                 //create an AsyncTask and execute it (we add the latch countDown).
                 List<FieldCheckpoint> fields = new ArrayList<FieldCheckpoint>();
                 fields.add(FieldCheckpoint.message);
-                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getLastCheckpoint, listener, "GM605112270084510370", "dhl-global-mail",fields,"") {
+                Tracking trackingGet1 = new Tracking("GM605112270084510370");
+                trackingGet1.setSlug("dhl-global-mail");
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getLastCheckpoint, listener, trackingGet1,fields,"") {
                     protected void onPostExecute(ConnectionAPI connection) {
                         super.onPostExecute(connection);
                         LaunchActivityTest.this.latch.countDown();
@@ -962,7 +991,9 @@ public class LaunchActivityTest extends InstrumentationTestCase {
                 List<FieldCheckpoint> fields = new ArrayList<FieldCheckpoint>();
                 fields.add(FieldCheckpoint.message);
                 fields.add(FieldCheckpoint.created_at);
-                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getLastCheckpoint, listener, "GM605112270084510370", "dhl-global-mail",fields,"") {
+                Tracking trackingGet1 = new Tracking("GM605112270084510370");
+                trackingGet1.setSlug("dhl-global-mail");
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getLastCheckpoint, listener, trackingGet1 ,fields,"") {
                     protected void onPostExecute(ConnectionAPI connection) {
                         super.onPostExecute(connection);
                         LaunchActivityTest.this.latch.countDown();
