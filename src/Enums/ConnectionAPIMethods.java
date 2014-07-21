@@ -5,7 +5,7 @@ package Enums;
  */
 public enum ConnectionAPIMethods {
 
-    getLastCheckpoint(0),reactivate(1),getTrackingByNumber(2),getTrackings(3),deleteTracking(4),
+    getLastCheckpoint(0),retrack(1),getTrackingByNumber(2),getTrackings(3),deleteTracking(4),
     postTracking(5),putTracking(6),getCouriers(7),detectCouriers(8),getTrackingsNext(9),getAllCouriers(10);
     private final int numberMethod;
 
