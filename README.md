@@ -29,23 +29,36 @@ onTaskComplete(ConnectionAPI result), is where the Asynchronous return will be s
     //We can call the method from onCreated
     public void onCreate(Bundle savedInstanceState) {
         //Create and execute a petition
-        new ConnectionAPI(API_KEY, ConnectionAPIMethods.getCouriers, this).execute();
+        new ConnectionAPI(API_KEY, ConnectionAPIMethods.getALLCouriers, this).execute();
     }
     
     //define the method onTaskComplete in your Activity
     public void onTaskComplete(ConnectionAPI result) {
+    
         //Control the exception of the result
-        if (result.getException()!=null)
+        if (result.getException()!=null){
             System.out.println(result.getException().getMessage());//Do something with the exception
+        }
 
         //Every method has a number associate, getCouriers is 7
+        switch (result.getMethod().getNumberMethod()) {
+            case 10://getAllCouriers(10)
+                List<Courier> couriers = (List<Courier>) result.getReturn();//All the Couriers supported by Aftership
+                break;
+        }
+    }
+    
+**Get a list of the couriers in your account**
+
+	new ConnectionAPI(API_KEY, ConnectionAPIMethods.getCouriers, this).execute();
+	
+	public void onTaskComplete(ConnectionAPI result) {
         switch (result.getMethod().getNumberMethod()) {
             case 7://getCouriers(7)
                 List<Courier> couriers = (List<Courier>) result.getReturn();//All the Couriers supported by Aftership
                 break;
         }
-    }
-
+	}
 
 **Detect which couriers defined in your account match a tracking number**
 
@@ -81,7 +94,7 @@ onTaskComplete(ConnectionAPI result), is where the Asynchronous return will be s
     tracking1.addCustomFields(“product_price”,"USD19.99");
 
 	//Finally we add the tracking to our account
-    new ConnectionAPI(API_KEY, ConnectionAPIMethods.detectCouriers, this, tracking1).execute();
+    new ConnectionAPI(API_KEY, ConnectionAPIMethods.postTracking, this, tracking1).execute();
 
 	    public void onTaskComplete(ConnectionAPI result) {
             //Remember to control a possible Exception
@@ -99,7 +112,10 @@ onTaskComplete(ConnectionAPI result), is where the Asynchronous return will be s
 
 **Delete a tracking of your account**
 
-    new ConnectionAPI(API_KEY, ConnectionAPIMethods.deleteTracking, this, trackingNumberDelete, slugDelete).execute();
+	
+	Tracking trackingDelete = new Tracking("123456789");//tracking number
+	trackingDelete.setSlug("dhl");
+    new ConnectionAPI(API_KEY, ConnectionAPIMethods.deleteTracking, this, trackingDelete.setSlug).execute();
     
     public void onTaskComplete(ConnectionAPI result) {
         //Remember to control a possible Exception
@@ -169,7 +185,9 @@ onTaskComplete(ConnectionAPI result), is where the Asynchronous return will be s
 
 **Get a tracking from your account**
 
-    new ConnectionAPI(API_KEY, ConnectionAPIMethods.getTrackingByNumber, this, "RC328021065CN", "canada-post").execute();
+	Tracking trackingToGet = new Tracking("RC328021065CN");
+	trackingToGet.setSlug("canada-post");
+    new ConnectionAPI(API_KEY, ConnectionAPIMethods.getTrackingByNumber, this,trackingToGet).execute();
 
     public void onTaskComplete(ConnectionAPI result) {
         //Remember to control a possible Exception
@@ -203,15 +221,18 @@ onTaskComplete(ConnectionAPI result), is where the Asynchronous return will be s
         }
     }  
 
-**Reactivate a tracking of your account**
+**Retrack a tracking of your account**
 
-    new ConnectionAPI(API_KEY, ConnectionAPIMethods.reactivate, this,"92748999985541553009345515","usps").execute();
+	Tracking tracking = new Tracking("RT224265042HK");
+    tracking.setSlug("hong-kong-post");
+    
+    new ConnectionAPI(API_KEY, ConnectionAPIMethods.retrack, this,tracking).execute();
     public void onTaskComplete(ConnectionAPI result) {
         //Remember to control a possible Exception
         
         switch (result.getMethod().getNumberMethod()) {
-            case 1: //reactivate
-                boolean answer = (Boolean) result.getReturn();//True if correct, false or exception otherwise
+            case 1: //retrack
+            	boolean answer = (Boolean) result.getReturn();//True if correct, false or exception otherwise
                 break;
         }
     }   
@@ -219,7 +240,9 @@ onTaskComplete(ConnectionAPI result), is where the Asynchronous return will be s
 
 **Get the last checkpoint of a tracking of your account**
 
-    new ConnectionAPI(API_KEY, ConnectionAPIMethods.getLastCheckpoint, this, "GM605112270084510370", "dhl-global-mail").execute();
+	Tracking tracking = new Tracking("GM605112270084510370");
+    tracking.setSlug("dhl-global-mail");
+    new ConnectionAPI(API_KEY, ConnectionAPIMethods.getLastCheckpoint, this, tracking).execute();
 
     public void onTaskComplete(ConnectionAPI result) {
         //Remember to control a possible Exception
@@ -271,6 +294,9 @@ onTaskComplete(ConnectionAPI result), is where the Asynchronous return will be s
                 break;
             case 9://getTrackingsNext(9)
                 List<Tracking> returnTrackings = (List<Tracking>)result.getReturn();
+                break;
+           case 10://getAllCouriers(10)
+                List<Couriers> returnCouriers = (List<Courier>)result.getReturn();
                 break;
         }
     }

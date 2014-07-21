@@ -414,8 +414,8 @@ public class Tracking {
         return trackingAccountNumber;
     }
 
-    public void setTrackingAccount_Number(String trackingAccount_Number) {
-        this.trackingAccountNumber = trackingAccount_Number;
+    public void setTrackingAccount_Number(String trackingAccountNumber) {
+        this.trackingAccountNumber = trackingAccountNumber;
     }
 
     public String getTrackingPostalCode() {
