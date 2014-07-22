@@ -15,6 +15,9 @@ import java.util.*;
  */
 public class Tracking {
 
+    /**Identifier of the tracking in the Aftership system*/
+    private String id;
+
     /**Tracking number of a shipment. Duplicate tracking numbers, or tracking number with invalid tracking
      * number format will not be accepted. */
     private String trackingNumber;
@@ -101,6 +104,8 @@ public class Tracking {
     /**Tracking ship date tracking_ship_date*/
     private String trackingShipDate;
 
+    /**Tracking to create push notification*/
+    private List<String> android;
 
 
     public Tracking(String trackingNumber) {
@@ -111,7 +116,7 @@ public class Tracking {
     public Tracking(JSONObject trackingJSON) throws JSONException,AftershipAPIException,ParseException {
 
         //fields that can be updated by the user
-
+        this.id = trackingJSON.isNull("id")?null:trackingJSON.getString("id");
         this.trackingNumber = trackingJSON.isNull("tracking_number")?null:trackingJSON.getString("tracking_number");
         this.slug= trackingJSON.isNull("slug")?null:trackingJSON.getString("slug");
         this.title = trackingJSON.isNull("title")?null:trackingJSON.getString("title");
@@ -165,11 +170,21 @@ public class Tracking {
                 ISO3Country.valueOf(trackingJSON.getString("origin_country_iso3"));
         this.shipmentPackageCount =  trackingJSON.isNull("shipment_package_count")?0:trackingJSON.getInt("shipment_package_count");
         this.shipmentType = trackingJSON.isNull("shipment_type")?null:trackingJSON.getString("shipment_type");
-        this.signedBy = trackingJSON.isNull("singned_by")?null:trackingJSON.getString("signed_by");
+        this.signedBy = trackingJSON.isNull("signed_by")?null:trackingJSON.getString("signed_by");
         this.source = trackingJSON.isNull("source")?null:trackingJSON.getString("source");
         this.tag = trackingJSON.isNull("tag")?null:StatusTag.valueOf(trackingJSON.getString("tag"));
         this.trackedCount = trackingJSON.isNull("tracked_count")?0:trackingJSON.getInt("tracked_count");
         this.uniqueToken = trackingJSON.isNull("unique_token")?null:trackingJSON.getString("unique_token");
+
+
+        //android
+        JSONArray androidArray = trackingJSON.isNull("android")?null: trackingJSON.getJSONArray("android");
+        if(androidArray!=null && androidArray.length()!=0){
+            this.android = new ArrayList<String>();
+            for (int i=0;i<androidArray.length();i++){
+                this.android.add(androidArray.get(i).toString());
+            }
+        }
 
         // checkpoints
         JSONArray checkpointsArray =  trackingJSON.isNull("checkpoints")?null:trackingJSON.getJSONArray("checkpoints");
@@ -179,7 +194,13 @@ public class Tracking {
                 this.checkpoints.add(new Checkpoint((JSONObject)checkpointsArray.get(i)));
             }
         }
+
+
     }
+
+    public String getId(){return id;}
+
+    public void setId(String id){this.id=id;}
 
     public String getTrackingNumber() {
         return trackingNumber;
@@ -191,6 +212,29 @@ public class Tracking {
 
     public void setSlug(String slug) {
         this.slug = slug;
+    }
+
+    public List<String> getAndroid() {
+        return android;
+    }
+
+    public void addAndroid(String android) {
+        if (this.android == null) {
+            this.android = new ArrayList<String>();
+            this.android.add(android);
+        } else {
+            this.android.add(android);
+        }
+    }
+
+    public void deleteAndroid(String android) {
+        if (this.android != null) {
+            this.android.remove(android);
+        }
+    }
+
+    public void deleteAndroid() {
+        this.android = null;
     }
 
     public List<String> getEmails() {
@@ -215,6 +259,7 @@ public class Tracking {
     public void deleteEmail() {
         this.emails = null;
     }
+
 
     public List<String> getSmses() {
         return smses;
@@ -369,8 +414,8 @@ public class Tracking {
         return trackingAccountNumber;
     }
 
-    public void setTrackingAccount_Number(String trackingAccount_Number) {
-        this.trackingAccountNumber = trackingAccount_Number;
+    public void setTrackingAccount_Number(String trackingAccountNumber) {
+        this.trackingAccountNumber = trackingAccountNumber;
     }
 
     public String getTrackingPostalCode() {
@@ -425,6 +470,11 @@ public class Tracking {
         }
         globalJSON.put("tracking", trackingJSON);
 
+        if (this.android != null) {
+            JSONArray androidJSON = new JSONArray(this.android);
+            trackingJSON.put("android", androidJSON);
+        }
+
         return globalJSON;
     }
 
@@ -454,6 +504,11 @@ public class Tracking {
             trackingJSON.put("custom_fields", customFieldsJSON);
         }
         globalJSON.put("tracking", trackingJSON);
+
+        if (this.android != null) {
+            JSONArray androidJSON = new JSONArray(this.android);
+            trackingJSON.put("android", androidJSON);
+        }
 
         return globalJSON;
     }

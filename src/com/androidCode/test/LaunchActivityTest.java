@@ -198,7 +198,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         boolean await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
         //total Couriers returned
-        assertEquals("It should return total couriers", 7, this.returnCoriers.size());
+        assertEquals("It should return total couriers", 8, this.returnCoriers.size());
         //check first courier
         assertEquals("First courier slug", "usps", this.returnCoriers.get(0).getSlug());
         assertEquals("First courier name", "USPS", this.returnCoriers.get(0).getName());
@@ -235,7 +235,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         boolean await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
         //total Couriers returned
-        assertEquals("It should return total couriers", 192, this.returnCoriers.size());
+        assertEquals("It should return total couriers", 196, this.returnCoriers.size());
         //check first courier
         assertEquals("First courier slug", "india-post-int", this.returnCoriers.get(0).getSlug());
         assertEquals("First courier name", "India Post International", this.returnCoriers.get(0).getName());
@@ -290,7 +290,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
         assertEquals("latch should be 0", 0, this.latch.getCount());
-        assertEquals("It should return 0 couriers", 0, this.returnCoriers.size());
+        assertEquals("It should return 0 couriers",null, this.returnCoriers);
     }
 
     public void testPostTracking() throws Throwable {
@@ -389,8 +389,8 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue("this is not 0", await);
         assertEquals("latch should be 0", 0, this.latch.getCount());
-        assertTrue(this.exception.getMessage().contains("4012"));
-        assertTrue(this.exception.getMessage().contains("Cannot detect courier. Activate courier at https://www.aftership.com/settings/courier."));
+        assertTrue(this.exception.getMessage().contains("4005"));
+        assertTrue(this.exception.getMessage().contains("The value of `tracking_number` is invalid."));
 //        assertEquals("It should return a exception if the tracking number doesn't matching any courier you have defined"
 //                , "{\"meta\":{\"code\":400,\"message\":\"Cannot detect courier. Activate courier at https://www.aftership.com/settings/courier.\",\"type\":\"InvalidContent\"},\"data\":{\"tracking\":{\"tracking_number\":\"ASDQ\",\"title\":\"asdq\"}}}", this.exception.getMessage());
 
@@ -438,8 +438,8 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         assertTrue(await);
         Log.d(this.exception.getMessage(),"");
         System.out.println(this.exception.getMessage());
-        assertTrue(this.exception.getMessage().contains("4004"));
-        assertTrue(this.exception.getMessage().contains("Tracking does not exist."));
+        assertTrue(this.exception.getMessage().contains("4010"));
+        assertTrue(this.exception.getMessage().contains("The value of `slug` is invalid."));
 //        assertEquals("It should return a exception if the slug is not informed properly"
 //                , " {\"meta\":{\"code\":404,\"message\":\"The requested resource does not exist.\",\"type\":\"ResourceNotFound\"},\"data\":{\"resource\":\"/v4/trackings//798865638020\"}}", this.exception.getMessage());
 
@@ -463,8 +463,8 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         });
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
-        assertTrue(this.exception.getMessage().contains("4004"));
-        assertTrue(this.exception.getMessage().contains("Tracking does not exist."));
+        assertTrue(this.exception.getMessage().contains("4005"));
+        assertTrue(this.exception.getMessage().contains("The value of `tracking_number` is invalid."));
 //        assertEquals("It should return a exception if the slug is not informed properly"
 //                , "{\"meta\":{\"code\":404,\"message\":\"Tracking does not exist.\",\"type\":\"ResourceNotFound\"},\"data\":{\"tracking\":{\"slug\":\"fedex\",\"tracking_number\":\"ADFA\"}}}", this.exception.getMessage());
 //        this.exception = null;
@@ -547,7 +547,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         boolean await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
 //        assertTrue("Exception "+this.exception.getMessage(),this.exception==null);
-        assertEquals("Should be 35 trackings", 35, this.returnTrackings.size());
+        assertEquals("Should be 35 trackings", 2, this.returnTrackings.size());
 
 
         this.addToCount(1);
@@ -579,7 +579,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
             public void run() {
                 //create an AsyncTask and execute it (we add the latch countDown).
                 ParametersTracking param2 = new ParametersTracking();
-                param2.addTag(StatusTag.AttemptFail);
+                param2.addTag(StatusTag.Pending);
                 new ConnectionAPI(API_KEY, ConnectionAPIMethods.getTrackings, listener, param2) {
                     protected void onPostExecute(ConnectionAPI connection) {
                         super.onPostExecute(connection);
@@ -590,7 +590,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         });
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
-        assertEquals("Should be 1 trackings", 1, this.returnTrackings.size());
+       // assertEquals("Should be 1 trackings", 9, this.returnTrackings.size());
         this.returnTrackings = null;
 
         this.addToCount(1);
@@ -665,8 +665,8 @@ public class LaunchActivityTest extends InstrumentationTestCase {
          await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
         System.out.println(this.exception.getMessage());
-        assertTrue(this.exception.getMessage().contains("4004"));
-        assertTrue(this.exception.getMessage().contains("Tracking does not exist."));
+        assertTrue(this.exception.getMessage().contains("4010"));
+        assertTrue(this.exception.getMessage().contains("The value of `slug` is invalid."));
 //        assertEquals("It should return a exception if the slug is not informed properly"
 //                , "{\"meta\":{\"code\":404,\"message\":\"The requested resource does not exist.\",\"type\":\"ResourceNotFound\"},\"data\":{\"resource\":\"/v4/trackings//RC328021065CN\"}}",
 
@@ -691,8 +691,8 @@ public class LaunchActivityTest extends InstrumentationTestCase {
 
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
-        assertTrue(this.exception.getMessage().contains("4004"));
-        assertTrue(this.exception.getMessage().contains("Tracking does not exist."));
+        assertTrue(this.exception.getMessage().contains("4005"));
+        assertTrue(this.exception.getMessage().contains("The value of `tracking_number` is invalid."));
 //        assertEquals("It should return a exception if the slug is not informed properly"
 //                , "ResourceNotFound. Tracking does not exist.  tracking = {\"tracking_number\":\"ADF\",\"slug\":\"fedex\"}", this.exception.getMessage());
 
@@ -775,8 +775,8 @@ public class LaunchActivityTest extends InstrumentationTestCase {
          await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
         System.out.println(this.exception.getMessage());
-        assertTrue(this.exception.getMessage().contains("4004"));
-        assertTrue(this.exception.getMessage().contains("Tracking does not exist."));
+        assertTrue(this.exception.getMessage().contains("4005"));
+        assertTrue(this.exception.getMessage().contains("The value of `tracking_number` is invalid."));
 //        assertEquals("It should return a exception if the tracking number doesn't matching any courier you have defined"
 //                , "{\"meta\":{\"code\":404,\"message\":\"Tracking does not exist.\",\"type\":\"ResourceNotFound\"},\"data\":{\"tracking\":{\"slug\":\"null\",\"tracking_number\":\"ASDQ\"}}}", this.exception.getMessage());
 
@@ -809,7 +809,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
                 //create an AsyncTask and execute it (we add the latch countDown).
                 Tracking tracking = new Tracking("RT224265042HK");
                 tracking.setSlug("hong-kong-post");
-                new ConnectionAPI(API_KEY, ConnectionAPIMethods.reactivate, listener,tracking) {
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.retrack, listener,tracking) {
                     protected void onPostExecute(ConnectionAPI connection) {
                         super.onPostExecute(connection);
                         LaunchActivityTest.this.latch.countDown();
@@ -821,8 +821,8 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         boolean await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
         System.out.println(this.exception.getMessage());
-        assertTrue(this.exception.getMessage().contains("4013"));
-        assertTrue(this.exception.getMessage().contains("Reactivate is not allowed. You can only reactivate an expired tracking."));
+        assertTrue(this.exception.getMessage().contains("4016"));
+        assertTrue(this.exception.getMessage().contains("Retrack is not allowed. You can only retrack each shipment once."));
 //        assertEquals("Should be equals message",
 //            "{\"meta\":{\"code\":409,\"message\":\"Reactivate is not allowed. You can only reactivate an expired tracking.\",\"type\":\"InvalidArgument\"},\"data\":{\"tracking\":{\"slug\":\"hong-kong-post\",\"tracking_number\":\"RT224265042HK\"}}}",
 //                this.exception.getMessage());
@@ -834,7 +834,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
             public void run() {
                 //create an AsyncTask and execute it (we add the latch countDown).
                 Tracking tracking = new Tracking("RT224265042HK");
-                new ConnectionAPI(API_KEY, ConnectionAPIMethods.reactivate, listener,tracking) {
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.retrack, listener,tracking) {
                     protected void onPostExecute(ConnectionAPI connection) {
                         super.onPostExecute(connection);
                         LaunchActivityTest.this.latch.countDown();
@@ -845,8 +845,8 @@ public class LaunchActivityTest extends InstrumentationTestCase {
 
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
-        assertTrue(this.exception.getMessage().contains("4004"));
-        assertTrue(this.exception.getMessage().contains("Tracking does not exist."));
+        assertTrue(this.exception.getMessage().contains("4010"));
+        assertTrue(this.exception.getMessage().contains("The value of `slug` is invalid."));
 //        assertEquals("It should return a exception if the slug is not informed properly"
 //                , "ResourceNotFound. The requested resource does not exist.  resource = /v4/trackings//RT224265042HK/reactivate", this.exception.getMessage());
 
@@ -858,7 +858,7 @@ public class LaunchActivityTest extends InstrumentationTestCase {
                 //create an AsyncTask and execute it (we add the latch countDown).
                 Tracking tracking = new Tracking("adf");
                 tracking.setSlug("fedex");
-                new ConnectionAPI(API_KEY, ConnectionAPIMethods.reactivate, listener,tracking) {
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.retrack, listener,tracking) {
                     protected void onPostExecute(ConnectionAPI connection) {
                         super.onPostExecute(connection);
                         LaunchActivityTest.this.latch.countDown();
@@ -869,8 +869,8 @@ public class LaunchActivityTest extends InstrumentationTestCase {
 
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
-        assertTrue(this.exception.getMessage().contains("4004"));
-        assertTrue(this.exception.getMessage().contains("Tracking does not exist."));
+        assertTrue(this.exception.getMessage().contains("4005"));
+        assertTrue(this.exception.getMessage().contains("The value of `tracking_number` is invalid."));
 //        assertEquals("It should return a exception if the slug is not informed properly"
 //                , "ResourceNotFound. Tracking does not exist.  tracking = {\"tracking_number\":\"ADF\",\"slug\":\"fedex\"}", this.exception.getMessage());
 
@@ -922,8 +922,8 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
         System.out.println(this.exception.getMessage());
-        assertTrue(this.exception.getMessage().contains("4004"));
-        assertTrue(this.exception.getMessage().contains("Tracking does not exist."));
+        assertTrue(this.exception.getMessage().contains("4010"));
+        assertTrue(this.exception.getMessage().contains("The value of `slug` is invalid."));
 //        assertEquals("It should return a exception if the slug is not informed properly"
 //                , "{\"meta\":{\"code\":404,\"message\":\"Tracking does not exist.\",\"type\":\"ResourceNotFound\"},\"data\":{\"tracking\":{\"slug\":\"dhl--mail\",\"tracking_number\":\"GM605112270084510370\"}}}", this.exception.getMessage());
 
@@ -946,8 +946,8 @@ public class LaunchActivityTest extends InstrumentationTestCase {
 
         await = this.latch.await(30, TimeUnit.SECONDS);
         assertTrue(await);
-        assertTrue(this.exception.getMessage().contains("4004"));
-        assertTrue(this.exception.getMessage().contains("Tracking does not exist."));
+        assertTrue(this.exception.getMessage().contains("4005"));
+        assertTrue(this.exception.getMessage().contains("The value of `tracking_number` is invalid."));
 //        assertEquals("It should return a exception if the slug is not informed properly"
 //                , "ResourceNotFound. Tracking does not exist.  tracking = {\"tracking_number\":\"ADS\",\"slug\":\"dhl--mail\"}", this.exception.getMessage());
 
@@ -1010,4 +1010,306 @@ public class LaunchActivityTest extends InstrumentationTestCase {
         assertEquals("Should be equals","2014-06-17T04:19:38+00:00",newCheckpoint2.getCreatedAt());
     }
 
+    ///Test by ID
+
+
+    public void testDeleteTrackingID() throws Throwable{
+
+
+        this.addToCount(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                //create an AsyncTask and execute it (we add the latch countDown).
+                Tracking newTracking = new Tracking("RT406182863DE");
+                newTracking.setSlug("deutsch-post");
+                newTracking.setTrackingShipDate("20140627");
+
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getTrackingByNumber, listener, newTracking) {
+                    protected void onPostExecute(ConnectionAPI connection) {
+                        super.onPostExecute(connection);
+                        LaunchActivityTest.this.latch.countDown();
+                    }
+                }.execute();
+            }
+        });
+
+        boolean await = this.latch.await(30, TimeUnit.SECONDS);
+        assertTrue(await);
+        final String id = this.returnTracking.getId();
+
+        this.addToCount(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                //create an AsyncTask and execute it (we add the latch countDown).
+                Tracking newTracking = new Tracking("whatever");
+                newTracking.setId(id);
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.deleteTracking, listener, newTracking) {
+                    protected void onPostExecute(ConnectionAPI connection) {
+                        super.onPostExecute(connection);
+                        LaunchActivityTest.this.latch.countDown();
+                    }
+                }.execute();
+            }
+        });
+
+        await = this.latch.await(30, TimeUnit.SECONDS);
+        assertTrue(await);
+        assertTrue("Delete should return true",this.returnActionConfirmation);
+
+        this.addToCount(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                //create an AsyncTask and execute it (we add the latch countDown).
+
+                Tracking newTracking = new Tracking("RT406182863DE");
+                newTracking.setSlug("deutsch-post");
+                newTracking.setTrackingShipDate("20140627");
+
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.postTracking, listener, newTracking) {
+                    protected void onPostExecute(ConnectionAPI connection) {
+                        super.onPostExecute(connection);
+                        LaunchActivityTest.this.latch.countDown();
+                    }
+                }.execute();
+            }
+        });
+
+        await = this.latch.await(30, TimeUnit.SECONDS);
+        assertTrue(await);
+
+    }
+
+    public void testGetTrackingByNumberID()throws Throwable{
+
+
+        this.addToCount(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                //create an AsyncTask and execute it (we add the latch countDown).
+
+                Tracking trackingGet1 = new Tracking("whatever");
+                trackingGet1.setId("539fc1d68a6157923f0a9284");
+
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getTrackingByNumber, listener, trackingGet1) {
+                    protected void onPostExecute(ConnectionAPI connection) {
+                        super.onPostExecute(connection);
+                        LaunchActivityTest.this.latch.countDown();
+                    }
+                }.execute();
+            }
+        });
+        boolean await = this.latch.await(30, TimeUnit.SECONDS);
+        assertTrue(await);
+        Tracking tracking = this.returnTracking;
+        assertEquals("Should be equals TrackingNumber", "RC328021065CN", tracking.getTrackingNumber());
+        assertEquals("Should be equals Slug", "canada-post", tracking.getSlug());
+        assertEquals("Should be equals type", "Lettermail", tracking.getShipmentType());
+
+    }
+
+    public void testGetTrackingByNumber2ID()throws Throwable{
+
+
+        this.addToCount(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                //create an AsyncTask and execute it (we add the latch countDown).
+                List<FieldTracking> fields = new ArrayList<FieldTracking>();
+                fields.add(FieldTracking.tracking_number);
+                Tracking trackingGet1 = new Tracking("whatever");
+                trackingGet1.setId("539fc1d68a6157923f0a9284");
+
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getTrackingByNumber, listener, trackingGet1,fields,""){
+                    protected void onPostExecute(ConnectionAPI connection) {
+                        super.onPostExecute(connection);
+                        LaunchActivityTest.this.latch.countDown();
+                    }
+                }.execute();
+            }
+        });
+        boolean await = this.latch.await(30, TimeUnit.SECONDS);
+        assertTrue(await);
+
+
+        Tracking tracking3 = this.returnTracking;
+        assertEquals("Should be equals TrackingNumber", "RC328021065CN", tracking3.getTrackingNumber());
+        assertEquals("Should be equals title", null, tracking3.getTitle());
+        assertEquals("Should be equals slug", null, tracking3.getSlug());
+        assertEquals("Should be equals checkpoint", null, tracking3.getCheckpoints());
+    }
+
+    public void testPutTrackingID()throws Throwable{
+
+
+        this.addToCount(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                //create an AsyncTask and execute it (we add the latch countDown).
+                Tracking tracking = new Tracking("whatever");
+                tracking.setId("539fc1d68a6157923f0a9284");
+
+                tracking.setTitle("another title");
+
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.putTracking, listener, tracking){
+                    protected void onPostExecute(ConnectionAPI connection) {
+                        super.onPostExecute(connection);
+                        LaunchActivityTest.this.latch.countDown();
+                    }
+                }.execute();
+            }
+        });
+        boolean await = this.latch.await(30, TimeUnit.SECONDS);
+        assertTrue(await);
+        Tracking tracking2 = this.returnTracking;
+        assertEquals("Should be equals title", "another title", tracking2.getTitle());
+
+
+        this.addToCount(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                //create an AsyncTask and execute it (we add the latch countDown).
+                Tracking tracking3 = new Tracking(trackingNumberToDetectError);
+                tracking3.setId("111111111111111");
+
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.putTracking, listener, tracking3){
+                    protected void onPostExecute(ConnectionAPI connection) {
+                        super.onPostExecute(connection);
+                        LaunchActivityTest.this.latch.countDown();
+                    }
+                }.execute();
+            }
+        });
+        await = this.latch.await(30, TimeUnit.SECONDS);
+        assertTrue(await);
+        //test post tracking number doesn't exist
+        Exception e = this.exception;
+        assertTrue(e.getMessage().contains("4015"));
+        assertTrue(e.getMessage().contains("The value of `id` is invalid."));
+
+
+    }
+
+
+    public void testGetLastCheckpointID()throws Throwable{
+
+
+        this.addToCount(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                //create an AsyncTask and execute it (we add the latch countDown).
+                Tracking trackingGet1 = new Tracking("whatever");
+                trackingGet1.setId("539fc1d9f9b60c804a0a0f74");
+
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getLastCheckpoint, listener, trackingGet1){
+                    protected void onPostExecute(ConnectionAPI connection) {
+                        super.onPostExecute(connection);
+                        LaunchActivityTest.this.latch.countDown();
+                    }
+                }.execute();
+            }
+        });
+        boolean await = this.latch.await(30, TimeUnit.SECONDS);
+        assertTrue(await);
+
+        Checkpoint newCheckpoint = this.returnCheckpoint;
+        assertEquals("Should be equals message", "Delivered", newCheckpoint.getMessage());
+        assertEquals("Should be equals city name", "BUDERIM QLD, AU", newCheckpoint.getCountryName());
+        assertEquals("Should be equals tag", "Delivered", newCheckpoint.getTag());
+    }
+
+    public void testGetLastCheckpoint2ID()throws Throwable{
+
+
+        this.addToCount(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                //create an AsyncTask and execute it (we add the latch countDown).
+                List<FieldCheckpoint> fields = new ArrayList<FieldCheckpoint>();
+                fields.add(FieldCheckpoint.message);
+                Tracking trackingGet1 = new Tracking("whatever");
+                trackingGet1.setId("539fc1d9f9b60c804a0a0f74");
+
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getLastCheckpoint, listener, trackingGet1,fields,""){
+                    protected void onPostExecute(ConnectionAPI connection) {
+                        super.onPostExecute(connection);
+                        LaunchActivityTest.this.latch.countDown();
+                    }
+                }.execute();
+            }
+        });
+        boolean await = this.latch.await(30, TimeUnit.SECONDS);
+        assertTrue(await);
+
+        Checkpoint newCheckpoint = this.returnCheckpoint;
+        assertEquals("Should be equals message", "Delivered", newCheckpoint.getMessage());
+        assertEquals("Should be equals",null,newCheckpoint.getCreatedAt());
+
+
+        this.addToCount(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                //create an AsyncTask and execute it (we add the latch countDown).
+                List<FieldCheckpoint> fields = new ArrayList<FieldCheckpoint>();
+                fields.add(FieldCheckpoint.message);
+                fields.add(FieldCheckpoint.created_at);
+                Tracking trackingGet1 = new Tracking("whatever");
+                trackingGet1.setId("539fc1d9f9b60c804a0a0f74");
+
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getLastCheckpoint, listener, trackingGet1,fields,""){
+                    protected void onPostExecute(ConnectionAPI connection) {
+                        super.onPostExecute(connection);
+                        LaunchActivityTest.this.latch.countDown();
+                    }
+                }.execute();
+            }
+        });
+        await = this.latch.await(30, TimeUnit.SECONDS);
+        assertTrue(await);
+
+        Checkpoint newCheckpoint2 =  this.returnCheckpoint;
+        assertEquals("Should be equals message", "Delivered", newCheckpoint2.getMessage());
+        assertEquals("Should be equals","2014-06-17T04:19:38+00:00",newCheckpoint2.getCreatedAt());
+    }
+
+    public void testGetLastCheckpoint3ID()throws Throwable{
+
+
+        this.addToCount(1);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                //create an AsyncTask and execute it (we add the latch countDown).
+                List<FieldCheckpoint> fields = new ArrayList<FieldCheckpoint>();
+                fields.add(FieldCheckpoint.message);
+                Tracking trackingGet1 = new Tracking("whatever");
+                trackingGet1.setId("53bb4db6dcebe7242fe3283e");
+
+                new ConnectionAPI(API_KEY, ConnectionAPIMethods.getLastCheckpoint, listener, trackingGet1,fields,""){
+                    protected void onPostExecute(ConnectionAPI connection) {
+                        super.onPostExecute(connection);
+                        LaunchActivityTest.this.latch.countDown();
+                    }
+                }.execute();
+            }
+        });
+        boolean await = this.latch.await(30, TimeUnit.SECONDS);
+        assertTrue(await);
+
+//        trackingGet1.setSlug("arrowxl");
+//        trackingGet1.setTrackingPostalCode("BB102PN");
+
+        Checkpoint newCheckpoint1 = this.returnCheckpoint;
+        assertEquals("Should be equals message", "Delivered", newCheckpoint1.getMessage());
+
+    }
 }
