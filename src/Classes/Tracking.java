@@ -42,7 +42,8 @@ public class Tracking {
     /**Total delivery time in days, calculated by the time difference of first checkpoint time and delivered
      * time for delivered shipments, and that and current time for non-delivered shipments. Value as '0' for
      * pending shipments or delivered shipment with only one checkpoint.*/
-    private String deliveryTime;
+    private int deliveryTime;
+
     /** ISO Alpha-3(three letters)to specify the destination of the shipment.
      * If you use postal service to send international shipments, AfterShip will automatically
      * get tracking results at destination courier as well (e.g. USPS for USA). */
@@ -125,7 +126,7 @@ public class Tracking {
         this.slug= trackingJSON.isNull("slug")?null:trackingJSON.getString("slug");
         this.title = trackingJSON.isNull("title")?null:trackingJSON.getString("title");
         this.customerName = trackingJSON.isNull("customer_name")?null:trackingJSON.getString("customer_name");
-        this.deliveryTime =  trackingJSON.isNull("delivery_time")?null:trackingJSON.getString("delivery_time");
+        this.deliveryTime =  trackingJSON.isNull("delivery_time")?0:trackingJSON.getInt("delivery_time");
         this.destinationCountryISO3 = trackingJSON.isNull("destination_country_iso3")?
                 null:ISO3Country.valueOf(trackingJSON.getString("destination_country_iso3"));
         this.orderID = trackingJSON.isNull("order_id")?null:trackingJSON.getString("order_id");
@@ -305,11 +306,11 @@ public class Tracking {
         this.customerName = customerName;
     }
 
-    public String getDeliveryTime() {
+    public int getDeliveryTime() {
         return deliveryTime;
     }
 
-    public void setDeliveryTime(String deliveryTime) {
+    public void setDeliveryTime(int deliveryTime) {
         this.deliveryTime = deliveryTime;
     }
 
@@ -423,11 +424,11 @@ public class Tracking {
         this.uniqueToken = uniqueToken;
     }
 
-    public String getTrackingAccount_Number() {
+    public String getTrackingAccountNumber() {
         return trackingAccountNumber;
     }
 
-    public void setTrackingAccount_Number(String trackingAccountNumber) {
+    public void setTrackingAccountNumber(String trackingAccountNumber) {
         this.trackingAccountNumber = trackingAccountNumber;
     }
 
