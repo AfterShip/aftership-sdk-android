@@ -25,5 +25,5 @@ public enum FieldTracking {
     tag,
     title,
     tracked_count,
-    checkpoints;
+    checkpoints
 }

@@ -231,15 +231,10 @@ public class ParametersTracking {
         if (this.createdAtMin != null) qs.add("created_at_min", DateMethods.toString(this.createdAtMin));
         if (this.createdAtMax != null) qs.add("created_at_max", DateMethods.toString(this.createdAtMax));
         if (this.lang != null)qs.add("lang", this.lang);
-
         if (this.slugs != null) qs.add("slug",this.slugs);
-
         if (this.origin != null) qs.add("origin", this.origin);
-
         if (this.destination != null) qs.add("destination",this.destination);
-
         if (this.tags != null) qs.add("tag",this.tags);
-
         if (this.fields != null) qs.add("fields",this.fields);
 
         //globalJSON.put("tracking", trackingJSON);
@@ -247,4 +242,3 @@ public class ParametersTracking {
         return qs.getQuery();
     }
 }
-

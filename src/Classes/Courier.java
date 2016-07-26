@@ -130,5 +130,4 @@ public class Courier {
     public void deleteRequierFields() {
         this.requireFields = null;
     }
-
 }
