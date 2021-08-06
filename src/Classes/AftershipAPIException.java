@@ -7,9 +7,7 @@ public class AftershipAPIException extends Exception{
 
     public AftershipAPIException() {}
 
-    public AftershipAPIException(String message)
-    {
+    public AftershipAPIException(String message){
         super(message);
     }
-
 }

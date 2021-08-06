@@ -39,7 +39,5 @@ final class DateMethods {
         sb.insert(22,':');
 
         return sb.toString();
-
-
     }
 }

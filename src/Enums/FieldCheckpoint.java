@@ -4,7 +4,6 @@ package Enums;
  * Created by User on 26/6/14.
  */
 public enum FieldCheckpoint {
-
     created_at,
     checkpoint_time,
     city,
@@ -14,5 +13,5 @@ public enum FieldCheckpoint {
     message,
     state,
     tag,
-    zip;
+    zip
 }

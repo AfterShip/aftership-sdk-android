@@ -1,11 +1,8 @@
 package Classes;
 
 import Enums.ISO3Country;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.Date;
 
 /**
  * Created by User on 10/6/14.
@@ -42,6 +39,9 @@ public class Checkpoint {
 
     /** Location info (if any) */
     private String zip;
+    
+    /** Check Point location (if any) */
+    private String location;
 
     public Checkpoint(JSONObject checkPointJSON)throws JSONException{
 
@@ -55,6 +55,7 @@ public class Checkpoint {
         this.state = checkPointJSON.isNull("state")?null:checkPointJSON.getString("state");
         this.tag = checkPointJSON.isNull("tag")?null:checkPointJSON.getString("tag");
         this.zip = checkPointJSON.isNull("zip")?null:checkPointJSON.getString("zip");
+        this.location = checkPointJSON.isNull("location")?null:checkPointJSON.getString("location");
 
     }
 
@@ -70,6 +71,7 @@ public class Checkpoint {
         sb.append((state==null)?"":"\n\t\tstate="+state);
         sb.append((tag==null)?"":"\n\t\ttag="+tag);
         sb.append((zip==null)?"":"\n\t\tzip="+zip);
+        sb.append((location==null)?"":"\n\t\tlocation="+location);
 
         return sb.toString();
     }
@@ -108,6 +110,10 @@ public class Checkpoint {
 
     public String getZip() {
         return zip;
+    }
+    
+    public String getLocation() {
+        return location;
     }
 }
 

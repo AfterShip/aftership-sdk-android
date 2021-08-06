@@ -261,7 +261,6 @@ public enum ISO3Country {
     }
 
     public String getName(){
-
         return this.name;
     }
 
